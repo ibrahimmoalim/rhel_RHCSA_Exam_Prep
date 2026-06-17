@@ -62,4 +62,4 @@
 
 ## extra terminal notes
 
-- a **#** infront of a command makes it do nothing, comments it out
+- A **#** infront of a command makes it do nothing, comments it out
