@@ -32,6 +32,14 @@
 - back on installation summary screen, on the bottom right, click on Begin Installation (this will take sometime)
 - once it's done, click on reboot system on the bottom right
 - register the server with RHEL developer free account or paid organization account, go to settings -> system -> registration -> enter username and passwordfor RHEL account -> leave organization field blank if in no organization -> register
+- set the timezone if it's wrong
+    ```bash
+    sudo timedatectl set-timezone Africa/Mogadishu
+    ```
+    Verify:
+    ```bash
+    timedatectl
+    ```
 
 ### create a snapshot
 - before you install things, once you login, create a snapshot of clean server so we can go back to it if things go sideways
@@ -60,6 +68,14 @@ Usually, the registration command will automatically try to attach a subscriptio
 - verify registration status
     ```bash
     sudo subscription-manager status
+    ```
+- set the timezone if it's wrong
+    ```bash
+    sudo timedatectl set-timezone Africa/Mogadishu
+    ```
+    Verify:
+    ```bash
+    timedatectl
     ```
 - ctrl+d or exit to logout
 - create a snpashot
