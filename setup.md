@@ -31,6 +31,7 @@
 - back on installation summary screen, under system options click on Network & host name -> on the bottom left side, enter host name like: master-server.ibrahimmoalim.com -> apply -> done
 - back on installation summary screen, on the bottom right, click on Begin Installation (this will take sometime)
 - once it's done, click on reboot system on the bottom right
+- register the server with RHEL developer free account or paid organization account, go to settings -> system -> registration -> enter username and passwordfor RHEL account -> leave organization field blank if in no organization -> register
 
 ### create a snapshot
 - before you install things, once you login, create a snapshot of clean server so we can go back to it if things go sideways
@@ -47,6 +48,19 @@
 - begin installation and reboot when it's done
 - this time instead of graphical login, you'll be thrown into a terminal
 - enter username (first input), password on second input
+- register the system:
+    ```bash
+    sudo subscription-manager register --username 'USERNAME' --password 'PASSWORD'
+    ```
+- attach a subscription
+Usually, the registration command will automatically try to attach a subscription for you. To make absolutely sure your system has found your Developer subscription, run:
+    ```bash
+    sudo subscription-manager attach --auto
+    ```
+- verify registration status
+    ```bash
+    sudo subscription-manager status
+    ```
 - ctrl+d or exit to logout
 - create a snpashot
 
