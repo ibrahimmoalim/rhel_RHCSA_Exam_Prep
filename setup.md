@@ -1,6 +1,6 @@
 # Installations
 
-### install virt-manager
+## install virt-manager
 - head over to [virt-manager](https://virt-manager.org/)
 - copy the vm manager app installation command for your distro
     ```bash
@@ -9,7 +9,7 @@
     ```
 - run the command to install virt-manager
 
-### install RHEL DVD ISO
+## install RHEL DVD ISO
 - head over to [developers.redhat.com](https://developers.redhat.com/products/rhel/download#downloadsbyrelease)
 - install latest Red Hat Enterprise Linux (DVD iso, around 10.3 GB)
 
