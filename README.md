@@ -59,6 +59,21 @@
 21 directories
 ```
 - `tree -d -L 2 ./mobile_project_demo/` => using the tree command target a specific dir in cwd
+- less => cat command but uses pages so you can scroll down by holding enter and use terminal shortcuts for man pages since they are similar
+- more => same as less but it's older (less has more features)
+- tail -f (file-path) => best for viewing live logs (-f means follow, so any new lines in that file is shown live)
+
+## vim notes
+
+- `:r !cat vimrc` => this is used to copy contents of a file into the file you currently have open in vim, in this instance `vimrc` contents will be put into the current file open in vim. You can use any command and get it's output copied into the editor where your cursor is (here we are using cat)
+- gg => go to top of file (while is `esc` mode)
+- G => go to bottom of file
+- yy => copy line
+- p => paste line
+- dd => delete line
+- u => undo
+- :wq => save and quit
+- :q! => quit without saving
 
 ## extra terminal notes
 
