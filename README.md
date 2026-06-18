@@ -63,6 +63,14 @@
 - more => same as less but it's older (less has more features)
 - tail -f (file-path) => best for viewing live logs (-f means follow, so any new lines in that file is shown live)
 
+- grep with regex
+    - `... | grep '^2026-06-17'` => greps every line that starts with that string (^ means line starts with), this is useful for logs where you want to target a specific data, if the logs start with date you can use that, but it's used for anything not just logs and dates.
+    - `... | grep 'removed$'` => greps everyline that ends with 'removed' (used $ at the end of arg)
+    - `... | grep '....x86_64...'` => this will show every line that has x86_64 in it and highlight 3 chars before 'x86_64' and 2 chars after (the closest dots that are before and after 'x86_64' are the arg providers, the other dots are the amount of chars). It can be also used like:
+      `... | grep '11:..:..'` => this will show every line that includes 11th hour from 11:00:00 to 11:59:59. You can also check what happened in a specific time frame like 10:30:00 to 10:50:00:
+      `... | grep '10:[3-5]'` => this will only target any line that includes 10:3... , 10:4... and 10:5...
+
+
 ## vim notes
 
 - `:r !cat vimrc` => this is used to copy contents of a file into the file you currently have open in vim, in this instance `vimrc` contents will be put into the current file open in vim. You can use any command and get it's output copied into the editor where your cursor is (here we are using cat)
