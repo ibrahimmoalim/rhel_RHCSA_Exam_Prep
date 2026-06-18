@@ -13,10 +13,10 @@ sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.no
 
 ```
 
-Once that is done, you can install **`htop`**, **`tree`**, and **`speedtest-cli`** normally. For system system specs, use **`fastfetch`** instead of screenfetch:
+Once that is done, you can install **`htop`** and **`tree`** normally. For system specs, use **`fastfetch` or `neofetch`** if screenfetch is unavailable:
 
 ```bash
-sudo dnf install htop tree speedtest-cli neofetch
+sudo dnf install htop tree neofetch
 ```
 
 ---
