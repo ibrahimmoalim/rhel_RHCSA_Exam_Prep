@@ -46,7 +46,7 @@
 - on the top right side click on **Manage VM Snapshots** (2 monitors icon) -> on the bottom left side, click on ** Create new snapshot** (plus icon) -> give it name like: `first-snapshot-clean-install` -> finish -> click on the far top right side monitor icon (show the graphical console) to go back.
 - shutdown the VM by click on power icon in one of the options on the top bar, then close window
 
-### create 2nd VM with RHEL
+### create 2nd VM with RHEL (Minimal Server)
 - go to virt-manager and click on create new VM
 - choose the same ...dvd.iso and follow the same steps as above (you can make it 15GB storage this time, name it `...-server2`)
 - on installation summary screen, under software options -> software selection -> this time choose **minimal install** instead of server with GUI for server 2
@@ -77,6 +77,23 @@ Usually, the registration command will automatically try to attach a subscriptio
     ```bash
     timedatectl
     ```
+- set the fontsize to a normal size if the current one is too small
+    - see available fonts
+    ```bash
+    ls /usr/lib/kbd/consolefonts
+    ```
+    - apply font (this one is normal size)
+    ```bash
+    setfont sun12x22
+    ```
+    - set it permanently
+    ```bash
+    sudo vim /etc/vconsole.conf
+    ```
+    ```bash
+    FONT="sun12x22"
+    ```
+
 - ctrl+d or exit to logout
 - create a snpashot
 
