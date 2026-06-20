@@ -63,12 +63,41 @@
 - more => same as less but it's older (less has more features)
 - tail -f (file-path) => best for viewing live logs (-f means follow, so any new lines in that file is shown live)
 
+### grep
 - grep with regex
     - `... | grep '^2026-06-17'` => greps every line that starts with that string (^ means line starts with), this is useful for logs where you want to target a specific data, if the logs start with date you can use that, but it's used for anything not just logs and dates.
     - `... | grep 'removed$'` => greps everyline that ends with 'removed' (used $ at the end of arg)
     - `... | grep '....x86_64...'` => this will show every line that has x86_64 in it and highlight 3 chars before 'x86_64' and 2 chars after (the closest dots that are before and after 'x86_64' are the arg providers, the other dots are the amount of chars). It can be also used like:
       `... | grep '11:..:..'` => this will show every line that includes 11th hour from 11:00:00 to 11:59:59. You can also check what happened in a specific time frame like 10:30:00 to 10:50:00:
-      `... | grep '10:[3-5]'` => this will only target any line that includes 10:3... , 10:4... and 10:5...
+      `... | grep '10:[3-5]'` => this will only target any line that includes 10:3... , 10:4... and 10:5... (you can do '10:[3-5]0' , it'll only show 30, 40 and 50 mins exactly)
+
+- **`grep -ri 'ibrahim' java_notes/`** => this will find any directory or file name in java_notes/ that contain the string 'ibrahim' (-r recursive -i ignore-case), showing what lines in what files
+- `grep -vi 'system' java_notes/src/com/java/basics/Methods.java` => (-v means exclude) this will only show lines that don't contain 'system' (case is ignored with -i)
+- `grep -in 'String' java_notes/src/com/java/basics/Arrayss.java` => (-n numbered) will show line numbers associated with the found lines, result is like this:
+```java
+7:    public static void main(String[] args) {
+10:        // for example this string variable can be turned into an array
+11:        // to hold more strings
+12:        // String fruit = "banana";
+14:        String[] fruits = { "orange", "banana", "apple" };
+19:        // ([Ljava.lang.String;@2a139a55)
+34:        // sort the strings in the array alphabetically
+41:        for (String fruit : fruits) {
+61:        String[] foods = new String[4];
+72:        for (String food : foods) {
+
+```
+- `grep -ril 'for' java_notes/src/com/java/` => (-l means files with matches) this will grep recursively through the give dir and show files that contain 'for' in their name or inside the file it self, but it doesn't show text lines inside files, just the file names.
+- `grep -o 'for' java_notes/src/com/java/basics/Arrayss.java` => shows only how many times 'for' appears, not full lines, only the string is shown:
+```java
+for
+for
+for
+for
+for
+for
+for
+```
 
 
 ## vim notes
