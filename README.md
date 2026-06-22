@@ -118,8 +118,9 @@ tar -xzvf <nameOfTheArchive>.tar.gz -C /home/<user>/
 ```bash
 ln file.txt path/to/file-hard-link.txt
 ```
-> hard links don't break when either of the files is deleted
+> hard links don't break when either of the files is deleted,
 > hard links point to Inode while sym links point to original file's path
+
 > Hard Link: Link → Inode → Data Blocks
 - create a symbolic link/soft link (files will have unique Inodes)
 >
@@ -128,6 +129,7 @@ ln -s file.txt path/to/file-sym-link.txt
 ```
 > If you edit or modify the contents of a symlink, you are actually modifying the original file. Think of a symlink like a wormhole. If you open a symlink in a text editor and make changes, the system automatically follows that link and writes the data directly into the original file.
 >However, deletion behaves differently: If you delete the symlink, the original file is safe. If you delete the original file, the symlink stays behind but becomes broken (it points to a path that no longer exists).
+
 > Symlink: Link → Path String (/path/to/file) → Target Filename → Inode → Data Blocks
 
 ### chmod
