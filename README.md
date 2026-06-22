@@ -99,6 +99,19 @@ for
 for
 ```
 
+### tar
+- archive a file or a dir
+```bash
+tar -czvf <nameOfOutputFile>.tar.gz <nameOfFileOrDirToBeArchived>
+```
+> -c: create, -z: zip format. -v: verbose, -f: file
+- unarchive/unzip to a specific dir with -C (default unzips to cwd)
+```bash
+tar -xzvf <nameOfTheArchive>.tar.gz -C /home/<user>/
+```
+> -x: extract
+> e.g `tar -xzvf someBackup.tar.gz -C /home/ibrahim/tests/`, this will extract to the tests dir in home dir
+
 
 ## vim notes
 
