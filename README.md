@@ -112,6 +112,73 @@ tar -xzvf <nameOfTheArchive>.tar.gz -C /home/<user>/
 > -x: extract
 > e.g `tar -xzvf someBackup.tar.gz -C /home/ibrahim/tests/`, this will extract to the tests dir in home dir
 
+### ln (links)
+- create a hard link (files will share same Inode)
+> You can check Inode with `stat` command: `stat <file>`
+```bash
+ln file.txt path/to/file-hard-link.txt
+```
+> hard links don't break when either of the files is deleted
+> hard links point to Inode while sym links point to original file's path
+> Hard Link: Link → Inode → Data Blocks
+- create a symbolic link/soft link (files will have unique Inodes)
+>
+```bash
+ln -s file.txt path/to/file-sym-link.txt
+```
+> If you edit or modify the contents of a symlink, you are actually modifying the original file. Think of a symlink like a wormhole. If you open a symlink in a text editor and make changes, the system automatically follows that link and writes the data directly into the original file.
+>However, deletion behaves differently: If you delete the symlink, the original file is safe. If you delete the original file, the symlink stays behind but becomes broken (it points to a path that no longer exists).
+> Symlink: Link → Path String (/path/to/file) → Target Filename → Inode → Data Blocks
+
+### chmod
+- change mode (permissions) for a file or a dir
+```bash
+chmod -v go+w file.txt
+```
+> this adds write permissions for group and others, '-v' or '--verbose' tells you what changed
+- add read and write for all
+```bash
+# octal way
+chmod -v 0666 file.txt
+```
+Or
+```bash
+#symbolic way
+chmod -v ugo+rw file.txt
+```
+- remove write permissions for group and others
+```bash
+chmod -v g-w,o-w file.txt
+```
+> the comma isn't required, you can use "go-w"
+- give group and others only write access
+```bash
+chmod -v g=w,o=w file.txt
+```
+> this will make it so that if group had read,write and execute access before, it'll now only have write. '=' only gives it what is provided in the command, it's like using numbers (octal way) '0622' (2 is write, 6 means user has read and write which usually the case)
+
+### umask (user mask)
+- check default permissions
+```bash
+umask
+```
+Or
+```bash
+#symbolic
+umask -S
+```
+> You'll see something like: `0022` or `u=rwx,g=rx,o=rx`(for -S).
+> Ignore the first 0, `022` is for user-group-others,
+> `umask` is more of a strip permissions instead of give permissions, so the 0 means by default user has full access to new files or directories, 2 means write permission is stripped, so we're left with read and execute for group and others. `0022` or `0002` is the default for Linux distros, `0002` meaning group has same permissions as user by default because each user has a group created with them.
+- change default permissions
+```bash
+umask 0022
+```
+Or
+```bash
+umask 022
+```
+> if it was 0002 before the command, it'll now become 0022
 
 ## vim notes
 
