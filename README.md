@@ -182,6 +182,34 @@ umask 022
 ```
 > if it was 0002 before the command, it'll now become 0022
 
+### find
+- find files or dir in the cwd by name, ignoring case
+```bash
+find . -iname ".vim*" -type d
+```
+> the 'i' in 'iname' is the arg for ignoring case, if you just do '-name', it'll only find directories or files with the exact given name (case sensitive). '.' only searches in cwd. '-type' only searches for given type, 'd' for dir and 'f' for files. You can also use '-user <user-name>' to only find items owned by a specific user (including root). The command finds any file or dir that starts with '.vim' (* means anything that comes after)
+- find items in a specific dir
+```bash
+find /var/log/ -mmin -10
+```
+> this finds all logs modified in the last 10 mins, '-mmin' means modified minutes. Use '-mmin +60' to see all dirs or files modified more than 60 mins (1 hour) ago.
+- find a dir or a file, then execute commands on them
+```bash
+find . -iname "*.txt" -user ibrahim -exec chmod 777 {} \;
+```
+> this finds any file or dir owned by 'ibrahim' ending with '.txt' and gives them all permissions to user, group, and others.
+
+> {} = puts the items found inside a {} one by one so -exec can run commands on them, it finds the first file, drops it into {}, runs command, and then completely empties {} before moving to the next file.
+> \; = end of execution.
+- find by size
+```bash
+find ~ -size +1G
+```
+> This finds any dir or file bigger than 1GB, 'M' for MB, 'k(lower-case)' for 'KB'. You can of course use '-1G' to find anything less than 1GB. '~' targets homde dir.
+```bash
+find / -size +2G -exec du -sh {} \;
+```
+
 ## vim notes
 
 - `:r !cat vimrc` => this is used to copy contents of a file into the file you currently have open in vim, in this instance `vimrc` contents will be put into the current file open in vim. You can use any command and get it's output copied into the editor where your cursor is (here we are using cat)
