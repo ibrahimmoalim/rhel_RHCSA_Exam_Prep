@@ -210,6 +210,51 @@ find ~ -size +1G
 find / -size +2G -exec du -sh {} \;
 ```
 
+### managing users
+#### who
+Checks who's logged in (will show seat0 and tty2 which just means graphical and terminal)
+#### last
+Shows who logged in last and how long they been using the system (last on top)
+#### id
+id (user-name) => Shows userID, groupID and what groups that user is in (wheel group means user has adminstrative privileges)
+#### passwd and shadow
+- cat /etc/(passwd or shadow) => Used for checking users and their IDs
+- cat /etc/login.defs => contains config for user creation like whether homde dir will be created for new users or not and much more
+#### skel (skeleton)
+This is a folder in /etc/skel that contains:
+```bash
+total 36K
+drwxr-xr-x   2 root root 4.0K May 17 09:22 .
+drwxr-xr-x 149 root root  12K Jun 23 14:03 ..
+-rw-r--r--   1 root root  220 Mar  8 18:21 .bash_logout
+-rw-r--r--   1 root root 3.5K Mar  8 18:21 .bashrc
+-rw-r--r--   1 root root 5.2K Aug 28  2025 .face
+lrwxrwxrwx   1 root root    5 Aug 28  2025 .face.icon -> .face
+-rw-r--r--   1 root root  807 Mar  8 18:21 .profile
+
+```
+> These files or directories inside /etc/skel will be given by default to any new user, so you can modify this (add dir to skel/ or a file) and those changes will be seen in new users home dir.
+#### useradd
+You can also use `adduser` but `useradd` is universal and used by every distro
+```bash
+sudo useradd -m -s /bin/bash <new user's name>
+```
+> -m gives it home dir and pull files from `/etc/skel`, -s defines shell (default is /bin/sh)
+#### passwd
+When you create a user you have to give them a password to switch to that user
+`sudo passwd <user-name>` => change password for a user
+#### usermod
+You can use this as a settings for user management if you forgot some options in `useradd` command, you can do them here, e.g:
+```bash
+sudo usermod -s /bin/bash <user-name>
+```
+Or change UID of a user:
+```bash
+sudo usermod -u 1500 <user-name>
+```
+#### deluser
+`sudo deluser <user-name>` => deletes user from system
+
 ## vim notes
 
 - `:r !cat vimrc` => this is used to copy contents of a file into the file you currently have open in vim, in this instance `vimrc` contents will be put into the current file open in vim. You can use any command and get it's output copied into the editor where your cursor is (here we are using cat)
