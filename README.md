@@ -243,6 +243,7 @@ sudo useradd -m -s /bin/bash <new user's name>
 #### passwd
 When you create a user you have to give them a password to switch to that user
 `sudo passwd <user-name>` => change password for a user
+> Note: only change password through this command, and not through `usermod` because `usermod` doesn't hash the pass.
 #### usermod
 You can use this as a settings for user management if you forgot some options in `useradd` command, you can do them here, e.g:
 ```bash
@@ -252,8 +253,24 @@ Or change UID of a user:
 ```bash
 sudo usermod -u 1500 <user-name>
 ```
+- lock a user's password
+```bash
+# or -L
+sudo usermod --lock <user-name>
+```
+> when you run this command successfully and you try to switch to the locked user, after you enter the password, you'll get something like 'authentication failed' even if the password was correct.
+- unlock a user's password
+```bash
+# or -U
+sudo usermod --unlock <user-name>
+```
 #### deluser
 `sudo deluser <user-name>` => deletes user from system
+#### chage (change age)
+- `sudo chage -M 60 <user-name` => sets the maximum number of **days** a password is valid to 60.
+    - If their password is 10 days old: They will be forced to change it in 50 days.
+    - If their password is 70 days old: They will be prompted to change it the very next time they try to log in.
+- `sudo chage -l <user-name>` => check user's current password aging status
 
 ## vim notes
 
