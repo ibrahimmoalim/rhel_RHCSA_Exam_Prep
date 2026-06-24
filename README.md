@@ -155,6 +155,7 @@ chmod -v g-w,o-w file.txt
 > the comma isn't required, you can use "go-w"
 - give group and others only write access
 ```bash
+# if you do 'o=', others will have no access (if nothing after the equal sign)
 chmod -v g=w,o=w file.txt
 ```
 > this will make it so that if group had read,write and execute access before, it'll now only have write. '=' only gives it what is provided in the command, it's like using numbers (octal way) '0622' (2 is write, 6 means user has read and write which usually the case)
@@ -271,6 +272,87 @@ sudo usermod --unlock <user-name>
     - If their password is 10 days old: They will be forced to change it in 50 days.
     - If their password is 70 days old: They will be prompted to change it the very next time they try to log in.
 - `sudo chage -l <user-name>` => check user's current password aging status
+
+### manage groups
+#### groupadd
+- create a group and add users to it
+```bash
+sudo groupadd -U <first-user>,<second-user> <group-name>
+```
+> e.g sudo groupadd -U ahmed,ali devs (-U means --users)
+Or first create a group with no -U, then add users to it with `usermod`
+```bash
+# this only modifies one user per command
+# make sure you give the -a (append) or user will be removed
+# from the prev groups they were in
+sudo usermod -aG <existing-group-name> <existing-user-name>
+```
+`gpasswd` is safer:
+```bash
+# if you miss the '-a' the command fails with syntax error
+# no damage done
+sudo gpasswd -a <user-name> <group-name>
+```
+- add multiple users to a group using gpasswd with a for loop
+```bash
+for u in ahmed ali umar; do sudo gpasswd -a "$u" admins; done
+```
+- remove a user from a group
+```bash
+sudo gpasswd -d <user-name> <group-name>
+```
+
+> It's best practice to add a group named 'admins' and put it in the sudoers file in /etc/sudoers, remove users from that file aside from root, add users you want to be able to use sudo to the admins group, you can later add more users easily and remove users from the admins group easily as well without ever touching the sudoers file, to add a group named `admins` to the sudoers file, do: `%admins ALL=(ALL:ALL) ALL` (for a user you wouldn't use the '%', thats the only difference)
+
+- delete a group
+```bash
+sudo groupdel <group-name>
+```
+
+### especial permissions (rws)
+> Note: If you see a capitalized S (like -rw-r-S---), it means the SUID/SGID bit is set, but the underlying file/directory is missing the execute (x) permission. A lowercase s means everything is configured correctly.
+- SUID (Set User ID)
+Runs binary as the file owner
+```bash
+# or `chmod 4755 <file>`
+sudo chmod u+s <file>
+```
+- SGID (Set Group ID)
+This is done for shared directories, where multiple users in the same group own a directory (Files inherit parent directory's group)
+```bash
+# or `chmod 2775 /path/to/dir`
+sudo chmod g+s /path/to/dir
+```
+> You'll see something like:
+```bash
+drwxrws--T   2 root    sharedGroup 4096 Jun 24 13:59 sharedDir
+```
+> Focus on the group part `rws`, Anyone in sharedGroup can read, write, and enter. (The 's' means new files inherit this group, so any directories (it automatically inherits the SGID bit (s) too for directories) or files created inside that sharedDir will have be owned by `sharedGroup`).
+- Sticky Bit
+Used for configuring shared directories where users can't delete each other's files (doesn't do anything when applied to individual files)
+```bash
+# or `chmod 1777 /path/to/dir`
+sudo chmod o+t /path/to/dir
+```
+> You'll see this on that folder:
+```bash
+# the 'T' means users in this dir won't be able to delete each others
+# files even though they share the same group (only root/sudoers/admins
+# and file owner can delete the file)
+drwxrws--T   2 root    sharedGroup 4096 Jun 24 13:59 sharedDir
+```
+- find all SUID and SGID files on the system
+```bash
+find / -perm /4000 -type f 2>/dev/null
+```
+```bash
+find / -perm /2000 -type f 2>/dev/null
+```
+```bash
+# for directories
+find / -perm /2000 -type d 2>/dev/null
+```
+
 
 ## vim notes
 
