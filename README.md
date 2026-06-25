@@ -353,6 +353,11 @@ find / -perm /2000 -type f 2>/dev/null
 find / -perm /2000 -type d 2>/dev/null
 ```
 
+### ip
+`ip a` or `ip addr` => show ip address and networks
+`ip neighbo show` => show networks recently talked to
+`ip route` => show gateway address
+
 ### nmcli (network manager command-line interface)
 - show all network interfaces (wifi, eth, loopback) and whether they are connected or disconnected
 ```bash
@@ -369,6 +374,19 @@ nmcli dev wifi list
 - show detailed connection about a network using it's `connection` name you get from `nmcli device status`
 ```bash
 nmcli connection show <wifi-connection-name/eth-connection-name>
+```
+- set static ip address
+```bash
+# network interface name is what you see when you do 'ip a'
+# either starts with 'en..' if ethernet or 'wl..' if wifi
+# subnet must match the original, this is 192.168.1.x/24
+# dns servers are seperated by a comma (don't add more than 3)
+sudo nmcli connection modify <network-interface-name> ipv4.addresses 192.168.1.120/24 ipv4.gateway 192.168.1.1 ipv4.dns "8.8.8.8,8.8.4.4,1.1.1.1" ipv4.method manual
+```
+- apply the change
+```bash
+# con is short for connection and it works
+sudo nmcli con up <network-interface-name>
 ```
 
 
