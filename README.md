@@ -353,6 +353,24 @@ find / -perm /2000 -type f 2>/dev/null
 find / -perm /2000 -type d 2>/dev/null
 ```
 
+### nmcli (network manager command-line interface)
+- show all network interfaces (wifi, eth, loopback) and whether they are connected or disconnected
+```bash
+nmcli device status
+```
+- list all saved network profiles on the system
+```bash
+nmcli connection show
+```
+- scan and list all available wifi networks in the physical area
+```bash
+nmcli dev wifi list
+```
+- show detailed connection about a network using it's `connection` name you get from `nmcli device status`
+```bash
+nmcli connection show <wifi-connection-name/eth-connection-name>
+```
+
 
 ## vim notes
 
