@@ -389,6 +389,56 @@ sudo nmcli connection modify <network-interface-name> ipv4.addresses 192.168.1.1
 sudo nmcli con up <network-interface-name>
 ```
 
+### hostname
+`hostname` => shows hostname
+- change host name
+```bash
+# exec bash applies it to the session
+hostnamectl set-hostname <new-host-name> && exec bash
+```
+- show server hardware info
+```bash
+sudo hostnamectl status
+```
+> You'll see something like:
+If server is debian on a laptop
+```bash
+ Static hostname: debian
+       Icon name: computer-laptop
+         Chassis: laptop 💻
+      Machine ID: [REDACTED]
+         Boot ID: [REDACTED]
+    Product UUID: [REDACTED]
+Operating System: Debian GNU/Linux 13 (trixie)
+          Kernel: Linux 6.12.94+deb13-amd64
+    Architecture: x86-64
+ Hardware Vendor: HP
+  Hardware Model: HP Pavilion Gaming Laptop [REDACTED]
+ Hardware Serial: [REDACTED]
+Firmware Version: F.30
+   Firmware Date: Mon 2025-10-27
+    Firmware Age: 7month 4w
+```
+If server is RHEL on a VM
+```bash
+ Static hostname: rhel-minimal.ibrahimmoalim.dev
+       Icon name: computer-vm
+         Chassis: vm 🖴
+      Machine ID: [REDACTED]
+         Boot ID: [REDACTED]
+    Product UUID: [REDACTED]
+  Virtualization: kvm
+Operating System: Red Hat Enterprise Linux 10.2 (Coughlan)
+     CPE OS Name: cpe:/o:redhat:enterprise_linux:10.2
+          Kernel: Linux 6.12.0-211.26.1.el10_2.x86_64
+    Architecture: x86-64
+ Hardware Vendor: QEMU
+  Hardware Model: Standard PC _Q35 + [REDACTED]
+Firmware Version: 1.16.3-debian-1.16.3-2
+   Firmware Date: Tue 2014-04-01
+    Firmware Age: 12y 2month 3w 3d
+```
+
 
 ## vim notes
 
