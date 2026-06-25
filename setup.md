@@ -93,7 +93,10 @@ Usually, the registration command will automatically try to attach a subscriptio
     ```bash
     FONT="sun12x22"
     ```
-
+- get auto completion for commands with `tab`
+```bash
+sudo dnf install bash-completion -y && exec bash
+```
 - ctrl+d or exit to logout
 - create a snpashot
 
