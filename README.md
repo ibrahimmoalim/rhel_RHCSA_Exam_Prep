@@ -494,10 +494,105 @@ sudo firewall-cmd --zone=home --list-all
 ```
 - expose a port to a specific ip address
 ```bash
+# Use 'reject' instead of 'accept' if you want to deny that ip addr
+# or 'drop' to silently block
+# Use 'remove' instead of 'add' to remove a rich rule
 sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="192.168.1.50" port port="22" protocol="tcp" accept'
 # reload
 sudo firewall-cmd --reload
 ```
+
+### cron and at
+`cron` is for recurring tasks (e.g., "back up the database every night at 2:00 AM"). It checks scheduled jobs every minute and runs them if their time has been reached.
+`at` is for a one-time task (e.g., "run this script once, exactly 15 minutes from now").
+> You can check `/etc/cron.allow` or `/etc/cron.deny` (only one should exist, if they don't exist, it means anyone can make cron jobs, you can create one of these files if they don't exist and type in the names of the users you want to allow or deny). Same for `at` (/etc/at.deny or /etc/at.allow)
+#### at
+- run commands in the future with at
+```bash
+# at doesn't support seconds
+echo "'This is form at command' > /home/ibra/at.txt" | at now + 1 minute
+```
+Or you could use it interactively:
+```bash
+# once you hit enter, you'll see >
+# you write commands and hit `ctrl+d` to exit once done
+at now + 4 minute
+```
+- for packages you need sudo
+```bash
+echo "dnf update -y && dnf install podman -y" | sudo at now + 4 minute
+```
+Or
+```bash
+# full time and data
+echo "dnf update -y && dnf install podman -y" | sudo at 14:25 2027-04-12
+```
+- list `at` jobs
+```bash
+at -l
+```
+- check qued jobs by `at`
+```bash
+sudo atq
+```
+- remove a job using it's number
+```bash
+atrm <job-#>
+```
+#### cron
+- check how crontab timings work
+```bash
+cat /etc/crontab
+```
+> You'll get:
+```bash
+# /etc/crontab: system-wide crontab
+# Unlike any other crontab you don't have to run the `crontab'
+# command to install the new version when you edit this file
+# and files in /etc/cron.d. These files also have username fields,
+# that none of the other crontabs do.
+
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Example of job definition:
+# .---------------- minute (0 - 59)
+# |  .------------- hour (0 - 23)
+# |  |  .---------- day of month (1 - 31)
+# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+# |  |  |  |  |
+# *  *  *  *  * user-name command to be executed
+```
+- schedule a command
+```bash
+# if you're on a non-GUI server, it'll most likely put you in vim
+# if you're in a GUI server, it'll give you option to choose b/w
+# installed text editors
+# type in your cron, e.g:
+# * * * * * echo "hi" >> /home/ibra/cron.txt
+# this will print 'hi' into that file every min.
+# the '*' every, so that's every day/month...
+crontab -e
+```
+- schedule a cron for a specific user
+```bash
+# everytime you use '-u', you must use sudo
+sudo crontab -u <user-name> -e
+```
+- check cron jobs for current user
+```bash
+crontab -l
+```
+- check cron jobs for a specific user
+```bash
+sudo crontab -u <user-name> -l
+```
+- delete current user's cron jobs
+```bash
+crontab -r
+```
+
 
 ## vim notes
 
