@@ -439,6 +439,65 @@ Firmware Version: 1.16.3-debian-1.16.3-2
     Firmware Age: 12y 2month 3w 3d
 ```
 
+### firewall-cmd
+- check all zones (A zone is a trust level for a network connection or interface. For example, the public zone is untrusted (closed off by default), while the trusted zone accepts everything. You assign services to those zones based on how much you trust the incoming network.)
+```bash
+sudo firewall-cmd --list-all-zones
+```
+- get default zone (it's usually `public`)
+```bash
+sudo firewall-cmd --get-default-zone
+```
+- change zone (this sticks after reboot)
+```bash
+# change default zone to home
+sudo firewall-cmd --set-default-zone=home
+```
+- list services in the current zone
+```bash
+sudo firewall-cmd --list-services
+```
+- list all predifined services
+```bash
+sudo firewall-cmd --get-services
+```
+- add a predefined service
+```bash
+# '--permanent' is important so it sticks after reboot
+sudo firewall-cmd --permanent --add-service=http
+# make sure to reload
+sudo firewall-cmd --reload
+```
+- remove a service
+```bash
+sudo firewall-cmd --permanent --remove-service=http
+# reload
+sudo firewall-cmd --reload
+```
+- add/allow a specific port (port is like the door while service is whats inside the room)
+```bash
+sudo firewall-cmd --permanent --add-port=8081/tcp
+# reload
+sudo firewall-cmd --reload
+```
+- check status (show active/non-active services and ports)
+```bash
+sudo firewall-cmd --list-all
+```
+- add a serviece to a specific zone
+```bash
+sudo firewall-cmd --permanent --zone=home --add-service=https
+# reload
+sudo firewall-cmd --reload
+# verify
+sudo firewall-cmd --zone=home --list-all
+```
+- expose a port to a specific ip address
+```bash
+sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="192.168.1.50" port port="22" protocol="tcp" accept'
+# reload
+sudo firewall-cmd --reload
+```
 
 ## vim notes
 
