@@ -100,9 +100,10 @@ for
 ```
 
 ### tar
+> the `-z` flag uses `gzip`, if you use `-j` instead of `-z` it will use `bzip2` which gives you a smaller size but it's slower.
 - archive a file or a dir
 ```bash
-tar -czvf <nameOfOutputFile>.tar.gz <nameOfFileOrDirToBeArchived>
+tar -czvf <nameOfOutputFile>.tar.gz <pathToFileOrDirToBeArchived>
 ```
 > -c: create, -z: zip format. -v: verbose, -f: file
 - unarchive/unzip to a specific dir with -C (default unzips to cwd)
@@ -159,6 +160,17 @@ chmod -v g-w,o-w file.txt
 chmod -v g=w,o=w file.txt
 ```
 > this will make it so that if group had read,write and execute access before, it'll now only have write. '=' only gives it what is provided in the command, it's like using numbers (octal way) '0622' (2 is write, 6 means user has read and write which usually the case)
+- change permissions on a dir and everything inside it
+```bash
+# Change permissions on the folder and all nested files/folders
+chmod -R 755 /var/www/html/
+```
+- add 'x' permissions recursively to a dir
+only adds 'x' to files if they already had it but makes every dir inside executable (meaning you can `cd` into it)
+```bash
+chmod -R u+X /shared_dir/
+```
+> x means execute a script or a binary for files, but for dirs it means enter by running `cd`
 
 ### umask (user mask)
 - check default permissions
