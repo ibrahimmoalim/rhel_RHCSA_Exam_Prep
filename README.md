@@ -594,7 +594,7 @@ crontab -r
 ```
 
 ### systemctl targets
-Targets are system environments. `multi-user.target` is minimal environment with terminal only.
+Targets define the state the system boots into. `multi-user.target` is minimal environment with terminal only.
 `graphical.target` is a graphical user interface environment.
 
 - get current target
