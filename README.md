@@ -593,6 +593,44 @@ sudo crontab -u <user-name> -l
 crontab -r
 ```
 
+### systemctl targets
+Targets are system environments. `multi-user.target` is minimal environment with terminal only.
+`graphical.target` is a graphical user interface environment.
+
+- get current target
+```bash
+systemctl get-default
+```
+- see all targets
+```bash
+systemctl set-default <double-tab-to-see-targets>
+```
+- set a default target
+```bash
+# for example 'multi-user.target'
+systemctl set-default <target-name>
+# you have to reboot for it to take effect
+sudo reboot
+```
+
+### timedatectl (for setting timezone)
+- check current timezone and more info
+```bash
+timedatectl status
+```
+- list timezones
+```bash
+timedatectl list-timezones
+```
+- set timezone
+```bash
+timedatectl set-timezone Africa/Mogadishu
+```
+- check time quicly using `date` command
+```bash
+date
+```
+
 
 ## vim notes
 
