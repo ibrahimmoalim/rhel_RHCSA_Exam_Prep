@@ -59,7 +59,7 @@ sudo systemctl isolate graphical.target
 ## Create hard and soft links ✅
 - [hard and sof link notes](https://github.com/ibrahimmoalim/rhel_RHCSA_Exam_Prep#ln-links)
 
-## List, set, and change standard ugo/rwx permissions
+## List, set, and change standard ugo/rwx permissions ✅
 - `chown` and `chgrp` to change ownership of fiesl or dirs
 ```bash
 # change owner to ali

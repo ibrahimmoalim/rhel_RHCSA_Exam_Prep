@@ -68,7 +68,7 @@ sudo dnf repolist
 - `sudo dnf install <pkg-name> -y` => install a pkg
 - `sudo dnf remove <pkg-name> -y` => removes a pkg
 
-## Configure access to Flatpak repositories
+## Configure access to Flatpak repositories ✅
 - first install flatpak if not installed
 ```bash
 sudo dnf install flatpak -y
