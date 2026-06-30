@@ -552,6 +552,7 @@ sudo atq
 atrm <job-#>
 ```
 #### cron
+refer to this [video](https://www.youtube.com/watch?v=7cbP7fzn0D8&t=60s) for detailed info on how to use cron
 - check how crontab timings work
 ```bash
 cat /etc/crontab
