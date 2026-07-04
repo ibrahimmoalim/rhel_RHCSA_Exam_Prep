@@ -38,3 +38,4 @@ else
     echo "file.txt is empty."
 fi
 ```
+![conditionals image](conditionals.png)
