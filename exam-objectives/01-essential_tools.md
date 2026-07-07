@@ -6,7 +6,7 @@
 ## Use input-output redirection (>, >>, |, 2>, etc.) ✅
 - `>, >>, |` are simple enough, `2>` is for redirecting error ouputs
 ```bash
-# redirect it to '/dev/null' (which is nowhere, it's basically hidden)
+# redirect it to '/dev/null' (which is nowhere, it's deletes it forever)
 cta dkjbvgrekj 2> /dev/null
 # or redirect it to a specific file
 cta rkgnkdn 2> error.txt
