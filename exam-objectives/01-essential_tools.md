@@ -1,7 +1,7 @@
 # Understand and use essential tools ✅
 
 ## Access a shell prompt and issue commands with correct syntax ✅
-- this is basic commands like `ls`, but maka sure to use double-tab (hitting tab key twice) if you're stuck on a command and don't know what comes next (RHEL suggests options), if bash-completion isn't working, install it via: `sudo dnf install bash-completion`
+- this is basic commands like `ls`, but make sure to use double-tab (hitting tab key twice) if you're stuck on a command and don't know what comes next (RHEL suggests options), if bash-completion isn't working, install it via: `sudo dnf install bash-completion`
 
 ## Use input-output redirection (>, >>, |, 2>, etc.) ✅
 - `>, >>, |` are simple enough, `2>` is for redirecting error ouputs
