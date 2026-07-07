@@ -644,6 +644,31 @@ timedatectl set-timezone Africa/Mogadishu
 date
 ```
 
+### wall (write all)
+`wall` command sends message to all users active in the server, it's used so users work isn't disturbed when server is being updated.
+- first check who is logged in
+```bash
+# checks who is logged in rn and in the past
+who
+
+# checks who is logged in and what they are doing
+# 'IDLE' column shows if they are active or if their terminal session
+# is open but not doing anything, if it shows 20m for a user that means
+# the user hasn't touched the termianl for 20mins, it doesn't care if
+# a java app is running or how hard the server is working, it only checks
+# user activity (user hasn't touched their keyboard or sent a keystroke
+# in 20 mins)
+w
+```
+- you can kick (log out) a user using their TTY(you get from `w` command)
+```bash
+sudo pkill -9 -t pts/1
+```
+- send a message to all users connected to the server at the moment
+```bash
+sudo wall "System updates starting in 10 minutes. Please save your work and pause testing. Thank You."
+```
+
 
 ## vim notes
 
