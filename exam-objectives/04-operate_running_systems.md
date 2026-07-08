@@ -138,7 +138,58 @@ If a task tells you to "Terminate all processes owned by user 'ali'", you don't 
 sudo pkill -u ali
 ```
 
-## Adjust  process scheduling
+## Adjust  process scheduling ✅
 This means changing how the Linux kernel prioritizes CPU access for different tasks.
 
 On the exam, you will be expected to know how to start a new task with a specific priority or alter the priority of an already running process.
+- Linux uses `nice` values to control process priority
+    - think of it as how "nice" a process is to other processes on the system
+    - the scale runs from `-20` to `19`
+
+| Nice Value | Priority Level | Behavior |
+| --- | --- | --- |
+| **`-20`** | **Highest Priority** | Not nice at all. It grabs CPU time aggressively. |
+| **`0`** | **Default Priority** | Standard background/user task behavior. |
+| **`19`** | **Lowest Priority** | Extremely nice. It only runs when the CPU has absolutely nothing else to do. |
+
+> ⚠️ **Critical Rule:** Any standard user can make their own process *less* important (increase nice value to 10, 15, etc.). However, **only root (or `sudo`) can make a process more important** (negative nice values) because it impacts overall system performance.
+
+- Setting Priority on a NEW Process (`nice`)
+
+If you are about to launch a heavy, resource-intensive job (like a backup compression or a massive file search) and you don't want it to slow down the server, you start it with a high nice value.
+
+```bash
+# Start a backup task with a LOW priority (nice value of 15)
+nice -n 15 tar -czf backup.tar.gz /var/log/
+
+# Start a critical script with a HIGH priority (nice value of -5)
+sudo nice -n -5 ./critical_script.sh
+```
+
+- Changing Priority on an ALREADY RUNNING Process (`renice`)
+
+If a process is already running and causing issues, or if you need it to finish faster, you modify it live using its **PID** (Process ID).
+
+```bash
+# First, locate the PID of the rogue process (e.g., let's say 'dd' is running)
+pgrep dd
+# Let's say it returns PID: 4521
+
+# Lower its priority instantly to be 'nice' to the system
+sudo renice -n 10 -p 4521
+
+# Drop it to maximum priority (requires root/sudo)
+sudo renice -n -20 -p 4521
+```
+
+- Exam Tip: Verifying Your Work
+
+If the exam task asks you to *"Change the nice value of the process named 'my_app' to 5"*, you can verify that the change took effect using `ps`:
+
+```bash
+ps -eo pid,ni,comm | grep my_app
+```
+
+* The **`ni`** column stands for Nice. Make sure it shows exactly what was requested!
+
+## Manage tuning profiles
