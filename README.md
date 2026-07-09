@@ -21,15 +21,15 @@
     - shift+g => go to bottom
     - up and down arrow keys => move up and down
     - hold enter => go down
-    - space move down a whole page
+    - space => go to next page
     - /(pattern) => search for a string, like /list (shows all 'list')
     - n => go to the next search result item (top to bottom)
-    - shift+n => go to the prev search result item (top to bottom)
+    - shift+n => go to the prev search result item
     - ?(pattern) => same as '/' but it's reversed so 'n' is go to next item (bottom to top)
     - q => quit
 
 ## terminal commands
-
+### tree
 - `tree -d` => `tree` command but only shows directories
 - `tree -d -L 1` =>  `tree -d` but only shows 1 **level** (the first directories, like doing ls but only seeing directories, you can use higher numbers like 3 to see 3 levels)
 ```bash
@@ -59,6 +59,8 @@
 21 directories
 ```
 - `tree -d -L 2 ./mobile_project_demo/` => using the tree command target a specific dir in cwd
+
+### less, more, and tail
 - less => cat command but uses pages so you can scroll down by holding enter and use terminal shortcuts for man pages since they are similar
 - more => same as less but it's older (less has more features)
 - tail -f (file-path) => best for viewing live logs (-f means follow, so any new lines in that file is shown live)

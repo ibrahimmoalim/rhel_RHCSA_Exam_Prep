@@ -31,7 +31,7 @@
 - back on installation summary screen, under system options click on Network & host name -> on the bottom left side, enter host name like: master-server.ibrahimmoalim.com -> apply -> done
 - back on installation summary screen, on the bottom right, click on Begin Installation (this will take sometime)
 - once it's done, click on reboot system on the bottom right
-- register the server with RHEL developer free account or paid organization account, go to settings -> system -> registration -> enter username and passwordfor RHEL account -> leave organization field blank if in no organization -> register
+- register the server with RHEL developer free account or paid organization account, go to settings -> system -> registration -> enter username and password for RHEL account -> leave organization field blank if in no organization -> register
 - set the timezone if it's wrong
     ```bash
     sudo timedatectl set-timezone Africa/Mogadishu
@@ -43,7 +43,7 @@
 
 ### create a snapshot
 - before you install things, once you login, create a snapshot of clean server so we can go back to it if things go sideways
-- on the top right side click on **Manage VM Snapshots** (2 monitors icon) -> on the bottom left side, click on ** Create new snapshot** (plus icon) -> give it name like: `first-snapshot-clean-install` -> finish -> click on the far top right side monitor icon (show the graphical console) to go back.
+- on the top right side click on **Manage VM Snapshots** (2 monitors icon) -> on the bottom left side, click on ** Create new snapshot** (plus icon) -> give it name like: `first-snapshot-clean-install` -> finish -> click on the far top left side monitor icon (show the graphical console) to go back.
 - shutdown the VM by click on power icon in one of the options on the top bar, then close window
 
 ### create 2nd VM with RHEL (Minimal Server)
@@ -61,7 +61,8 @@
     sudo subscription-manager register --username 'USERNAME' --password 'PASSWORD'
     ```
 - attach a subscription
-Usually, the registration command will automatically try to attach a subscription for you. To make absolutely sure your system has found your Developer subscription, run:
+
+    Usually, the registration command will automatically try to attach a subscription for you. To make absolutely sure your system has found your Developer subscription, run:
     ```bash
     sudo subscription-manager attach --auto
     ```
