@@ -192,4 +192,51 @@ ps -eo pid,ni,comm | grep my_app
 
 * The **`ni`** column stands for Nice. Make sure it shows exactly what was requested!
 
-## Manage tuning profiles
+## Manage tuning profiles ✅
+Managing tuning profiles in RHEL revolves around the `tuned` system. It is a background service that dynamically optimizes system settings (like disk scheduling, CPU governors, and network buffers) based on the specific workload profile you select.
+
+if the system doesn't have `tuned-adm` and `tuned` command, install it with:
+```bash
+sudo dnf install tuned
+```
+Start the background process and enable it so it stays running
+```bash
+sudo systemctl enable --now tuned
+```
+
+- checking the current state
+Before changing anything, run this:
+```bash
+tuned-adm active
+```
+> output example: current active profile: virtual-guest
+- list all available profiles on the system
+```bash
+tuned-adm list
+```
+- let the system choose a profile
+If you aren't sure which profile is best for the current hardware configuration, `tuned` can analyze the environment and give you a recommendation.
+```bash
+tuned-adm recommend
+```
+- switch profiles (To change the profile, use the `profile` subcommand. This change takes effect immediately and remains permanent across system reboots.)
+    - switch to a specific profile
+    ```bash
+    # 'throughput-perfomance' is Broadly applicable tuning that provides
+    # excellent performance across a variety of common server workloads
+    sudo tuned-adm profile throughput-perfomance
+    ```
+    - verify the change
+    ```bash
+    tuned-adm active
+    ```
+- turn off tuning
+Sometimes an exam task or a troubleshooting scenario might ask you to completely disable dynamic tuning to isolate a performance issue.
+```bash
+# turn off tuning entirely
+sudo tuned-adm off
+```
+To turn if back on simply select a profile again with:
+```bash
+sudo tuned-adm profile <profile-name>
+```
