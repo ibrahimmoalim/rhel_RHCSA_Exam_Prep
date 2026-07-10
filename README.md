@@ -168,7 +168,8 @@ chmod -v g=w,o=w file.txt
 chmod -R 755 /var/www/html/
 ```
 - add 'x' permissions recursively to a dir
-only adds 'x' to files if they already had it but makes every dir inside executable (meaning you can `cd` into it)
+
+    only adds 'x' to files if they already had it but makes every dir inside executable (meaning you can `cd` into it)
 ```bash
 chmod -R u+X /shared_dir/
 ```
