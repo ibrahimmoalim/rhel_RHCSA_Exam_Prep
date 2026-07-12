@@ -240,3 +240,6 @@ To turn if back on simply select a profile again with:
 ```bash
 sudo tuned-adm profile <profile-name>
 ```
+
+## Locate and interpret system log files and journals
+RHEL uses a dual-logging system: traditional plain-text log files (managed by `rsyslog`) and a modern, secure binary logging system (managed by `systemd-journald`).
