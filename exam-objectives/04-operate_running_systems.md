@@ -50,21 +50,21 @@ rd.break
 mount -o remount,rw /sysroot
 # chroot stands for "Change Root". After the remount, the terminal thinks the temporary RAM disk
 # is the "top" of the system (/). By running this command, you trick the terminal into believing
-# that /sysroot (your actual hard drive) is now the main root (/) directory. This allows you
+# that /sysroot (the actual hard drive) is now the main root (/) directory. This allows you
 # to run commands as if you had booted into the system normally.
 chroot /sysroot
-# You will be prompted to type and confirm your new password
+# You will be prompted to type and confirm the new password
 passwd root
 # This is the most critical step on RHEL/CentOS. Security-Enhanced Linux (SELinux) relies on
 # specific cryptographic "labels" attached to files. Because you changed the password outside
 # of the normal boot sequence, the /etc/shadow file just lost its correct SELinux context.
 touch /.autorelabel
-# This takes you out of your hard drive filesystem (/sysroot) and puts your terminal
+# This takes you out of the hard drive filesystem (/sysroot) and puts the terminal
 # back into the temporary RAM disk environment.
 exit
 # This tells the kernel that you are done troubleshooting. The system will now catch the
 # .autorelabel file you created, spend a minute or two updating its security contexts, and
-# then finally present you with the normal login screen where your new password will work.
+# then finally present you with the normal login screen where the new password will work.
 exit
 ```
 ### `init=/bin/bash` method
@@ -82,7 +82,7 @@ init=/bin/bash
 # directory ('/') with Read-Write ('rw') permissions to make changes.
 mount -o remount,rw /
 # change root password
-# You will be prompted to type and confirm your new password
+# You will be prompted to type and confirm the new password
 passwd root
 # This is the most critical step on RHEL/CentOS. Security-Enhanced Linux (SELinux) relies on
 # specific cryptographic "labels" attached to files. Because you changed the password outside
@@ -90,10 +90,10 @@ passwd root
 touch /.autorelabel
 # Force the kernel to immediately flush all changes from RAM to the physical hard drive.
 # Bypassing systemd means standard background disk-writing tools aren't running,
-# so skipping this risks losing your files when the shell terminates.
+# so skipping this risks losing the files when the shell terminates.
 sync
 # Replaces the current standalone bash shell by initializing the actual systemd
-# boot process ('/sbin/init'). The system will pick up where it left off, notice your
+# boot process ('/sbin/init'). The system will pick up where it left off, notice the
 # '.autorelabel' file, run the security scan, and boot cleanly to the login screen.
 exec /sbin/init
 ```
@@ -113,7 +113,7 @@ ps aux --sort=-%cpu | head -n 6
 ps aux --sort=-%mem | head -n 6
 ```
 - Terminate processes safely
-Try a Gracefull Kill (signal 15, which is default). It tells the application, "Please save your work, close your open files, and shut down cleanly."
+Try a Gracefull Kill (signal 15, which is default). It tells the application, "Please save the work, close the open files, and shut down cleanly."
 ```bash
 # or simple do: kill <PID>
 # since -15 is default
@@ -241,5 +241,67 @@ To turn if back on simply select a profile again with:
 sudo tuned-adm profile <profile-name>
 ```
 
-## Locate and interpret system log files and journals
+## Locate and interpret system log files and journals ✅
 RHEL uses a dual-logging system: traditional plain-text log files (managed by `rsyslog`) and a modern, secure binary logging system (managed by `systemd-journald`).
+
+### Traditional Text Logs (`/var/log/`)
+These are plain text files. You can read them using tools like `cat`, `less`, `tail`, or `grep`.
+- `var/log/messages` -> The catch-all log for general system messages, global scripts, and non-authentication errors.
+- `/var/log/secure` -> The security vault. It logs every `sudo` attemp, SSH login. password failure, and user/group creation.
+- `/var/log/dnf.log` -> Shows what packages were installed, updated, or deleted and when.
+
+### Modern Binary Logging (`journalctl`)
+The systemd journal captures everything from early boot messages to application crashes. Because it is a binary format, you cannot open it with `less` or `cat`. You must use `journalctl`.
+- Filter by service
+```bash
+# -u means unit
+journalctl -u httpd.service
+```
+- Filter by severity
+See only warnings, critical issues, or errors:
+```bash
+# -p means priority
+journalctl -p err
+```
+- Filter by time
+```bash
+journalctl --since "15 minutes ago"
+journalctl --since "2026-07-09 10:00:00"
+```
+- LIve track (like `tail -f`)
+```bash
+journalctl -f
+```
+
+## Preserve system journals ✅
+By default on many RHEL installations, the systemd journal is ephemeral. This means all those detailed boot and service logs are stored in a temporary RAM directory (`/run/log/journal/`). The moment you reboot or shut down the machine, the logs disappear forever.
+- make the journal persistent
+```bash
+# it doesn't matter if the file already exists or not
+sudo vi /etc/systemd/journald.conf
+```
+- type the required section header and parameter
+```bash
+[Journal]
+Storage=persistent
+```
+- save, exit, and restart the service
+```bash
+sudo systemctl restart systemd-journald.service
+```
+- generate the proper directory with correct user and ownership
+```bash
+sudo systemd-tmpfiles --create --prefix /var/log/journal
+```
+- flush the memory to the disk
+Right now, the logs are still sitting in the temporary RAM cache. You need to explicitly tell the daemon to dump everything from RAM onto the newly configured disk space:
+```bash
+sudo journalctl --flush
+```
+- verify
+```bash
+ls -la /var/log/journal/
+```
+> You should instantly see a folder inside with a long string of letters and numbers (the system's unique Machine ID). That means it worked, and the journals are successfully being preserved!
+
+## Start, stop, and check the status of network services
