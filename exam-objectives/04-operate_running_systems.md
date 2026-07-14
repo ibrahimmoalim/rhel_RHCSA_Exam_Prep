@@ -1,4 +1,4 @@
-# Operate running systems
+# Operate running systems ✅
 
 ## Boot, reboot, and shut down a system normally ✅
 - so this is regular server boot, reboot and shutdown, but there's two ways to shutdown, one is higher level `shutdown` command with more options, the other is low level `poweroff` command which instantly cuts the power to the motherboard.
@@ -304,4 +304,81 @@ ls -la /var/log/journal/
 ```
 > You should instantly see a folder inside with a long string of letters and numbers (the system's unique Machine ID). That means it worked, and the journals are successfully being preserved!
 
-## Start, stop, and check the status of network services
+## Start, stop, and check the status of network services ✅
+Managing network services in RHEL 10 relies entirely on `systemctl`, the primary control interface for `systemd`.
+- these are the regular, `start`, `stop`, and `restart`(after making major configuration changes to an application) operations.
+- restart without dropping active connections with `reload` is service supports it
+- the persistence operations (They do not start or stop the service immediately on their own)
+    - enable a service to start at boot with `enable`
+    - disable a service from starting at boot with `disable`
+- instead of running `start` then `enable` as two seperate commands, you can combine them with:
+```bash
+sudo systemctl enable --now httpd
+```
+> this instantly stars Apache and sets it to auto-start on every future boot
+- check status with `status`, when looking at the output, pay attention to:
+    - `Loaded` -> shows if it's `enabled` or `disabled` for the next boot.
+    The `vendor preset` (or just `preset:`) tells you the original out-of-the-box state that the developers intended for that service when the package was first installed.
+
+        When you look at the `Loaded`: line, you will see a comparison between the current configuration and the default preset:
+    ```bash
+    Loaded: loaded (/usr/lib/systemd/system/sshd.service; enabled; preset: enabled)
+                                                      ↑                 ↑
+                                            The Current Setting   Default Setting
+    ```
+    - `Active` -> shows if it's currently `active (running)` or `inactive (dead)`.
+- change back to defaults
+If you have heavily modified several services and want to quickly revert a specific service back to whatever Red Hat originally intended, you don't have to look up the documentation. You can tell `systemctl` to read that preset value directly:
+```bash
+sudo systemctl preset sshd
+```
+- the `mask` trap
+If a service is completely broken, or if the exam wants to prevent a service from ever being started by another process or user, you can mask it. A masked service is linked to `/dev/null` and cannot be started manually or automatically until it is unmasked.
+```bash
+# completely lock down a service
+sudo systemctl mask firewalld
+
+# reverse it
+sudo systemctl unmask firewalls
+```
+
+## Securely transfer files between systems ✅
+First you have to connect the local and remote server with SSH
+- generate `ssh` key on local machine
+```bash
+# hit enter to accept all defaults
+ssh-keygen
+```
+> this creates a private key and a public key (ending in .pub) inside ~/.ssh/
+
+- copy the public key to the remote server
+ssh connection must be already established to the remote server with the use of password, and user must already exist in remote server (this key will make you connect without password in the future)
+```bash
+ssh-copy-id user@remote-server-ip
+```
+> you will be prompted to type the remote user's password one last time to authorize the transfer, the pub key will be added to remote servers authorized keys.
+
+- test it
+```bash
+ssh user@remote-server-ip
+```
+
+- securely copy files or directories between servers
+Once SSH is set up securely, you will use it as the transport layer to sync files between systems.
+- using `scp` (secure copy)
+great for simple, one-time file or dir transfers.
+```bash
+# copy local file to a remote server's /tmp dir
+scp /path/to/file user@remote-server-ip:/tmp/
+
+# copy a remote dir to local machine (requires -r)
+scp -r user@remote-server-ip:/var/www/html/ ./local_backup/
+```
+- using `rsync` (remote sync)
+`rsync` is highly preferred for large dirs because it only copies the diff between files, saving massive amounts of time and bandwidth.
+```bash
+# sync a local folder to a remote machine cleanly
+# -a is for archive, -v is verbose, and -z is compress
+rsync -avz /local/data/ user@remote-server-ip:/remote/backup/
+```
+> if you type `/local/data/` with a trailing slash, `rsync` copies the contents of the folder into the destination. However, if you type `/local/data` with no trailing slash, `rsync` copies the entire folder into the dest.
