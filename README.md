@@ -295,6 +295,10 @@ sudo usermod --unlock <user-name>
 sudo groupadd -U <first-user>,<second-user> <group-name>
 ```
 > e.g sudo groupadd -U ahmed,ali devs (-U means --users)
+```bash
+# update active GID so you don't have to re-login to use group
+newgrp <group-name>
+```
 Or first create a group with no -U, then add users to it with `usermod`
 ```bash
 # this only modifies one user per command
