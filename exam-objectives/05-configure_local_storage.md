@@ -233,3 +233,68 @@ df -h | grep data
 # or
 findmnt /mnt/data
 ```
+
+## Add new partitions and logical volumes, and swap to a system non-destructively ✅
+Red Hat will test your ability to add resources (like new partitions, LVs, and swap space) to an active system without rebooting it or corrupting any existing data—which is exactly what "non-destructively" means.
+- add a partition non-destructively
+This is already done in the first sub-objective in this configure local storage objective, but when you add a new partition to an active disk (like `/dev/vdb`) while the system is running, the kernel might not automatically see it because the partition table is "busy."
+
+If you run `lsblk` and your new partition (e.g., `/dev/vdb3`) doesn't show up, **do not reboot!** Instead, use these commands to force the kernel to safely scan and update its partition table:
+```bash
+# tells the kernel to reread the partition table
+sudo partprobe
+# tells the kernel to reread the partition table for a specific disk
+sudo partprobe /dev/vdb
+```
+if `partprobe` doesn't work or throws an error, you can use the alt *udev* tool:
+```bash
+sudo udevadm settle
+```
+> After running `partprobe`, run `lsblk` again, your new partition will be ready to format, zero reboots required.
+
+- add a new LV non-destructively
+this is done in the create LVs sub-objective. Because LVM is designed for live systems, creating a new LV is inherently non-destructive.
+
+The key is to verify the `/etc/fstab` config with `sudo mount -a`, after formatting and mounting the LV.
+
+- add swap space non-destructively
+    - You might be asked to add a specific amount of Swap space (e.g., 512 MB or 1 GB) using either a raw partition or a Logical Volume.
+
+        You can use one of the LVs created for practice, creating swap from LV instead of raw partition is the most common way on modern RHEL systems. If the system already had swap and it's active, you can still make another one, it'll just be added to it.
+    - Instead of `mkfs`, swap space has its own special formatting command:
+        ```bash
+        # if you have a logical volume named 'lv_swap'
+        sudo mkswap /dev/demo_vg/lv_swap
+        ```
+    - Activate the swap space immediately (live)
+        ```bash
+        sudo swapon /dev/demo_vg/lv_swap
+        ```
+    - verify it's active
+        ```bash
+        swapon --show
+        ```
+        You can also use `free -m` to see your total configured memory and swap.
+    - make it persistent in `/etc/fstab`
+
+        To make sure this swap space turns back on automatically at boot, copy the UUID you got from `mkswap` (or grab it using `sudo blkid /dev/demo_vg/lv_swap`) and append it to `/etc/fstab`:
+        ```bash
+        sudo vi /etc/fstab
+        ```
+        At the bottom add:
+        ```bash
+        UUID=<swap-uuid> none swap defaults 0 0
+        ```
+        > Note: Swap doesn't have a folder mount point, so we use `none` in the second column, and its filesystem type in the third column is `swap`.
+    - test the config
+
+        To safely test the new swap without rebooting, first turn off the swap space you just enabled
+        ```bash
+        sudo swapoff /dev/demo_vg/lv_swap
+        ```
+        Run the persistent swap-mount command
+        ```bash
+        sudo swapon -a
+        ```
+        > This reads `/etc/fstab` and mounts/activates all swap devices listed inside
+    - run `swapon --show` again, if new swap is active, the config worked.
