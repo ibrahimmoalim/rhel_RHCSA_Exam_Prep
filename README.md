@@ -1,3 +1,8 @@
+## Prerequisites before moving to [exam-objectives](https://github.com/ibrahimmoalim/rhel_RHCSA_Exam_Prep/tree/main/exam-objectives) directory
+
+- Basic to Mid Linux knowledge, this [YouTube Playlist](https://youtube.com/playlist?list=PLT98CRl2KxKHaKA9-4_I38sLzK134p4GJ&si=iebBuJ0NRI5HguKW) is helpful for that.
+- The notes in this README, which can be found in this [YouTube Playlist](https://www.youtube.com/playlist?list=PLuDU7KXguvmxeSHdVb6sfsTM9DwmFtjdV).
+
 ## troubleshooting virt-manager
 
 - if you get network 'default' is not active (the virtual network switch that your VM relies on to connect to the outside world isn't running) when you try to run a VM, open the terminal and run:
