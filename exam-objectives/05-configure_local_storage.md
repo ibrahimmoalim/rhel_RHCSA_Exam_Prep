@@ -20,7 +20,7 @@ First get an extra disk to create a partition on, in the exam you will have a se
 - once the VM loads, type `lsblk` to verify
 
 if you are using VirtualBox:
-- Select your RHEL VM and click **Settings** -> **Storage**.
+- Select the RHEL VM and click **Settings** -> **Storage**.
 - Click the **Add Hard Disk** icon next to the Controller (SATA or SCSI).
 - Choose **Create**, select **VDI**, pick **Dynamically allocated**, and set the size to `5 GB`.
 - Click **Choose/OK** and start the VM.
@@ -170,3 +170,66 @@ sudo lvremove /dev/demo_vg/demo_lv
 sudo lvremove /dev/demo_vg/*
 ```
 > LVM will ask you to confirm with `y/n` because this permanently destroys any data on that volume
+
+## Configure systems to mount file systems at boot by universally unique ID (UUID) or label ✅
+Using `/dev/vdb1` or `/dev/demo_vg/demo_lv` in your mount configuration is risky. If you add or remove virtual storage controllers, your Linux kernel might rename `/dev/vdb1` to `/dev/vdc1` on the next boot, causing mount errors.
+- A UUID is a permanent identifier tied directly to the filesystem itself. It will not change, even if you move the drive to a completely different SATA port or controller.
+
+- Stick to practicing and mounting by UUID always instead of Label, as UUID is the safest and industry-standard way to do this.
+
+- configure a persistent boot mount for `demo_lv` (from the `demo_vg` volume group) using it's UUID, follow the steps below:
+1. format the LV with a filesystem
+before a device can have a UUID, it must be formatted with either `xfs` (the RHEL default) or `ext4`
+```bash
+# if exam asks you to use 'ext4', substitute 'mkfs.xfs' with
+# 'mkfs.ext4'
+sudo mkfs.xfs /dev/demo_vg/demo_lv
+```
+
+2. retrieve the UUID
+run `blkid` command to find the UUID of your formatted volume
+```bash
+sudo blkid /dev/demo_vg/demo_lv
+```
+> You'll see something like: /dev/demo_vg/demo_lv: UUID="a1b2c3d4-e5f6-7a8b-9c0d-e1f2a3b4c5d6" TYPE="xfs"
+
+Copy the UUID inside the quotes (without the quotation marks)
+
+3. create the mount point
+create the target dir where the storage should appear
+```bash
+sudo mkdir -p /mnt/data
+```
+4. configure `/etc/fstab`
+open the system mounting configuration file using a text editor
+```bash
+sudo vi /etc/fstab
+```
+> Or use `nano`
+
+Append a new line at the bottom using this exact format
+```bash
+# if you formatted the volume as 'ext4', in column 3 type ext4
+UUID=a1b2c3d4-e5f6-7a8b-9c0d-e1f2a3b4c5d6  /mnt/data  xfs  defaults  0 0
+```
+- Column 1: `UUID=<your-copied-uuid>` (No spaces around the =)
+- Column 2: `/mnt/data` (The mount target)
+- Column 3: `xfs` (Matches the filesystem format you used in Step 1)
+- Column 4: `defaults` (Standard mounting options)
+- Column 5: `0` (Dump utility configuration)
+- Column 6: `0` (Filesystem check order)
+5. test the configuration (crucial)
+Do not reboot the machine yet! If there is a single typo in your `/etc/fstab` configuration, the system will crash into emergency mode on reboot.
+
+Run this command after saving `/etc/fstab`
+```bash
+sudo mount -a
+```
+- If it runs silently and returns no output: Your configuration is perfect! The system successfully read /etc/fstab and mounted the drive.
+- If it returns any warning or error: You have a typo. Correct the error inside `/etc/fstab` immediately and run `sudo mount -a` again until it is completely silent.
+6. verify the mount
+```bash
+df -h | grep data
+# or
+findmnt /mnt/data
+```
