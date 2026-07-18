@@ -1,5 +1,5 @@
 # Configure local storage ✅
-![alt text](LVM_Layer_Architecture.png)
+![LVM Layer Architecture](LVM_Layer_Architecture.png)
 
 ## List, create, and delete partitions on GPT disks ✅
 ### list partitions
