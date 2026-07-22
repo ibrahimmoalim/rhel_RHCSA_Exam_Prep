@@ -80,7 +80,90 @@ TARGET         SOURCE                      FSTYPE OPTIONS
 /mnt/ext4-data /dev/mapper/demo_vg-ext4_lv ext4   rw,relatime,seclabel
 ```
 
-## Mount and unmount network file systems using NFS
+## Mount and unmount network file systems using NFS ✅
+Network File System (NFS) allows two machines to share a folder and be synced.
+
+To practice for this task, you require two VMs, one to host an NFS server (a machine that takes a local directory on its hard drive (like /var/share) and "exports" it over the local network) and one to be the NFS client server (connects to that network share and hooks it into its own directory tree), on the exam the NFS server will be already setup, you'll be on the client and you have to mount it.
+
+Once mounted, users on the client VM can read and write files inside that folder as if it were a physical drive plugged directly into their own machine, but the data is actually traveling across the network and saving onto the server's disk.
+
+#### setup the host server (will be already there on the exam)
+- on the host server, install `nfs-utils`
+```bash
+sudo dnf install nfs-utils -y
+```
+- create a dir and give it open permissions so the client VM/Machine won't get blocked by ownership issues
+```bash
+sudo mkdir -p /var/nfs_share
+sudo chmod 777 /var/nfs_share
+```
+- export the dir
+Open the config file `/etc/exports` using `sudo vi /etc/exports` and add a line telling the server what to share and who is allowed to access it:
+```Plaintext
+/var/nfs_share    *(rw,sync,no_root_squash)
+```
+> `*` means any machine on the local network can try to connect, `rw` gives read/write perms, and `sync` ensures data changes are written immediately to the disk.
+- start and enable the service
+```bash
+sudo systemctl enable --now nfs-server
+```
+> if you change `/etc/exports` later, you can apply changes without restarting by running `sudo exportfs -r`
+- open the firewall
+RHEL has an active firewall by default. You need to let NFS traffic through so the client VM can talk to it:
+```bash
+# nfs traffic
+sudo firewall-cmd --permanent --add-service=nfs
+# legacy tools like showmount talk to two secondary services:
+# rpcbind (port 111) and mountd. Allowing just nfs through the
+# firewall isn't enough for showmount to fetch the exports list.
+sudo firewall-cmd --permanent --add-service=rpc-bind
+sudo firewall-cmd --permanent --add-service=mountd
+sudo firewall-cmd --reload
+```
+- make sure the NFS service is fully alive
+Sometimes, if the firewall configuration or files change, the NFS processes need a quick kick to register properly with the RPC portmapper:
+```bash
+sudo systemctl restart nfs-server
+```
+
+#### setup the client server (what you'll do in exam)
+- install the required package
+```bash
+sudo dnf install nfs-utils -y
+```
+- discover the remote shares (host server has to be running)
+Before you can mount a network share, you have to know what the server is actually sharing. You will be given the server's hostname or IP address (e.g., `server.example.com`).
+```bash
+# the -e flag stands for "exports"
+showmount -e server.example.com
+```
+Or
+```bash
+showmount -e <host-server-ip-address>
+```
+> You'll see something like:
+```bash
+Export list for <host-server-ip-address>:
+/var/nsf_share *
+```
+- create a local mount point (where the remote files will live locally)
+```bash
+sudo mkdir -p /mnt/nfs_share
+```
+- mount the network share persistently (so it survives reboot)
+```bash
+# open /etc/fstab
+sudo vi /etc/fstab
+
+# append this line
+# remote path                                           # local mount    # type   # options
+<host-server-ip-address-Or-hostname>:/var/nfs_share     /mnt/nfs_share    nfs     defaults,_netdev     0 0
+```
+> `_netdev`: tells RHEL "do not attempt to mount this share until the network interface is fully up and running", without this, the VM might crash or hang at boot trying to find a server it can't network to yet. `rw` or `ro`: the exam prompt might explicitly specify "mount the share as read-only", if it does, change the options column to `defaults,_netdev,ro`.
+- test it safely
+```bash
+sudo mount -a
+```
 
 ## Configure autofs
 
