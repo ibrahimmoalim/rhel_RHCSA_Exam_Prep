@@ -1,4 +1,4 @@
-# Create and configure file systems
+# Create and configure file systems ✅
 ![Linux File Systems](linuxFileSystems.png)
 
 ## Create, mount, unmount, and use VFAT, ext4, and XFS file systems ✅
@@ -165,7 +165,57 @@ sudo vi /etc/fstab
 sudo mount -a
 ```
 
-## Configure autofs
+## Configure autofs ✅
+Unlike the static `/etc/fstab` mounts can hang the machine when a server is down, `autofs` mounts network shares on demand (the moment you try to access the folder) and unmounts them automatically when they sit idle.
+
+The below tasks are only done in client server, which is what you'll use on the exam
+
+- install and start the service
+```bash
+sudo dnf install autofs -y
+```
+```bash
+sudo systemctl enable --now autofs
+```
+
+- how does `autofs` work?
+`autofs` uses tow main files to map remote shares to local folders:
+1. master map file (`/etc/auto.master.d/nfs.autofs`): this defines the parent dir where mounts will live and points to a secondary map file.
+2. secondary map file (`/etc/auto.nfs`): this defines the sub-dir name, mount options, and the remote NFS path.
+
+- create master map entry
+```bash
+sudo mkdir -p /mnt/autoshare
+```
+```bash
+sudo vi /etc/auto.master.d/nfs.autofs
+```
+Add this line:
+```Plaintext
+/mnt/autoshare   /etc/auto.nfs   --timeout=60
+```
+> `/mnt/autoshare`: base dir (autofs manages this folder), `/etc/auto.nfs`: path to the secondary map file (we will create next), `--timeout=60`: (optional) unmounts the share after 60 seconds of inactivity.
+
+- create the secondary map file
+```bash
+sudo vi /etc/auto.nfs
+```
+Add this line:
+```Plaintext
+public   -rw,soft,_netdev   <host-nfs-server-ip>:/var/nfs_share
+```
+> `public`: The sub-directory name created automatically inside `/mnt/auto_share/`, `-rw,soft,_netdev`: Options (prefixed with a dash `-`). Common flags: `rw` or `ro`, `soft` (prevents hangs if server drops), `fstype=nfs4`. `192.168.x.x:/var/nfs_share`: The NFS source.
+
+- restart the service and test
+```bash
+sudo systemctl restart autofs
+```
+
+Now, if you run `ls /mnt/autoshare`, it might look empty at first. This is normal. To trigger the automount, access the sub-dir directly (this sub-dir `public` will be created on demand)
+```bash
+cd /mnt/autoshare/public
+```
+> once you run this, that `public` dir will be created automatically by `autofs` and you'll see shared files or dirs inside it if there are any.
 
 ## Extend existing logical volumes ✅
 Extending an existing Logical Volume (LV) is to add space to a live volume without losing the data currently stored on it.
@@ -213,4 +263,154 @@ df -h
 ```
 > This checks if the mounted filesystem actually registered the new storage capacity and grew in size.
 
-## Diagnose and correct file permission problems
+## Diagnose and correct file permission problems ✅
+Permission issues in RHEL usually stem from **three distinct layers**:
+
+1. Standard Linux Permissions (UGO / `chmod` / `chown`)
+2. Special Permissions (SUID, SGID, Sticky Bit)
+3. Access Control Lists (ACLs)
+
+
+### Standard Linux Permissions (UGO)
+Every file and directory has three permission targets: **User (u)**, **Group (g)**, and **Others (o)**.
+
+#### Reading Permissions (`ls -l`)
+```text
+drwxr-xr--. 2 ibra devs 4096 Jul 22 10:00 project
+││  │  │
+││  │  └── Others: Read-only (r--)
+││  └───── Group (devs): Read & Execute (r-x)
+││  └────── User (ibra): Read, Write, Execute (rwx)
+└───────── File type ('d' = directory, '-' = regular file)
+```
+
+#### The Diagnostic Commands
+* **`ls -la /path/to/target`**: Check standard owner, group, and permission bits.
+* **`id <username>`**: Check which groups a blocked user actually belongs to.
+
+#### How to Fix
+```bash
+# Change ownership (User and Group)
+sudo chown ibra:devs /path/to/file
+
+# Change permissions (Octal mode)
+sudo chmod 755 /path/to/dir   # rwxr-xr-x
+sudo chmod 644 /path/to/file  # rw-r--r--
+
+# Change permissions (Symbolic mode - safest for exam!)
+sudo chmod g+w /path/to/file  # Add write to group
+sudo chmod o-rwx /path/to/file # Strip all access from others
+```
+
+### Special Permissions (SGID, SUID, Sticky Bit)
+Exam tasks frequently ask for collaborative group directories or restricted shared folders.
+
+#### Set Group ID (SGID) on Directories
+* **The Problem:** When users in a shared team folder create files, those files inherit the user's primary group instead of the team's group, breaking group access.
+* **The Fix:** SGID forces all *new* files created inside a directory to inherit the **directory's group ownership**.
+
+```bash
+# Set SGID (Symbolic or Octal 2xxx)
+sudo chmod g+s /shared/dev_dir
+# OR
+sudo chmod 2770 /shared/dev_dir
+
+# Verification: 'ls -ld' will show an 's' in the group execute position:
+# drwxrws---. 2 root devs 4096 ... /shared/dev_dir
+```
+
+#### Set User ID (SUID) on Files
+When an executable file has SUID set, any user who runs that executable temporarily gains the privileges of the file's owner (which is almost always `root`) while that program is actively executing, rather than running with their own permissions.
+
+SUID is designed specifically for binary executable files. On standard Linux systems (including RHEL), SUID on directories is ignored by the Linux kernel for security reasons. Setting SUID on a directory does nothing. SUID is also ignored on interpreted scripts (like Python or Bash scripts) by default in Linux to prevent privilege escalation vulnerabilities.
+```bash
+# SUID on an executable file (Symbolic)
+sudo chmod u+s /path/to/binary
+
+# SUID (Octal mode: 4xxx)
+sudo chmod 4755 /path/to/binary
+
+# Verification: 'ls -l' will show an 's' in the user execute slot:
+# -rwsr-xr-x. 1 root root 68240 Jul 22 10:00 /usr/bin/passwd
+```
+> If you see a capital `S` instead of lowercase `s`, it means SUID is set, but the owner didn't have execute (`x`) permissions enabled first
+
+#### Sticky Bit
+* **The Problem:** In a shared folder with write permissions for everyone (like `/tmp`), users can delete each other's files.
+* **The Fix:** The Sticky Bit ensures **only the file owner (or root)** can delete or rename files inside that directory.
+
+```bash
+# Set Sticky Bit (Symbolic or Octal 1xxx)
+sudo chmod +t /shared/public_dir
+# OR
+sudo chmod 1777 /shared/public_dir
+
+# Verification: 'ls -ld' will show a 't' at the end:
+# drwxrwxrwt. 2 root root 4096 ... /shared/public_dir
+```
+
+### Access Control Lists (ACLs)
+Standard `ugo` permissions only allow **one owner** and **one group**. If the exam asks you to give a *specific secondary user* read access without changing group ownership, you **must use ACLs**.
+
+#### How to Spot an ACL
+Run `ls -l`. If you see a **plus sign (`+`)** at the end of the permissions string, an ACL is active:
+
+```text
+drwxr-xr--+ 2 root devs 4096 Jul 22 10:00 secret_data
+```
+
+#### Diagnose with `getfacl`
+Never try to guess ACL issues with `ls`. Always inspect with `getfacl`, if the command is missing, install it with:
+```bash
+sudo dnf install acl -y
+```
+> this will allow you to use `getfacl` and `setfacl`
+
+```bash
+getfacl /path/to/file
+
+# Display ACLs for all files in the current dir
+getfacl -a .
+```
+
+*Output will clearly display specific user/group entries beyond standard UGO.*
+#### Modify with `setfacl`
+
+```bash
+# Give user 'ibrahim' read/write access
+sudo setfacl -m u:ibrahim:rw /path/to/file
+
+# Give group 'auditors' read-only access
+sudo setfacl -m g:auditors:r /path/to/file
+
+# Set DEFAULT ACL on a directory (so ALL future/new sub-files inherit it)
+sudo setfacl -m d:u:ibrahim:rw /shared/dir
+
+# Remove a specific user ACL entry
+sudo setfacl -x u:ibrahim /path/to/file
+
+# Remove ALL custom ACLs (reset to standard permissions)
+sudo setfacl -b /path/to/file
+
+# Recurse into subdirectories
+setfacl -R u:ibrahim:rx /data/reports
+```
+
+### Diagnostic Walkthrough (The Exam Troubleshooting Routine)
+When a question states: *"User `ali` cannot write to `/data/reports`,"* follow this exact 3-step checklist:
+
+1. **Check standard owner and group:**
+```bash
+ls -ld /data/reports
+id ali
+```
+
+*Is ali the owner? Is ali in the group? Does the target bit have `w`?*
+2. **Check for blocking ACLs:**
+```bash
+getfacl /data/reports
+```
+
+*Is there an explicit `u:ali:r--` or a mask blocking write access?*
+3. **Check parent directory permissions:**
+*Even if `/data/reports` has `777`, if `/data` is set to `700` and owned by `root`, user `ali` can't traverse into the folder!* Test parent paths with `ls -ld /data`.
