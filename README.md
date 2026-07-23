@@ -529,12 +529,12 @@ sudo firewall-cmd --reload
 ### cron and at
 `cron` is for recurring tasks (e.g., "back up the database every night at 2:00 AM"). It checks scheduled jobs every minute and runs them if their time has been reached.
 `at` is for a one-time task (e.g., "run this script once, exactly 15 minutes from now").
-> You can check `/etc/cron.allow` or `/etc/cron.deny` (only one should exist, if they don't exist, it means anyone can make cron jobs, you can create one of these files if they don't exist and type in the names of the users you want to allow or deny). Same for `at` (/etc/at.deny or /etc/at.allow)
+> You can check `/etc/cron.allow` or `/etc/cron.deny` (only one should exist, if they don't exist, it means anyone can make cron jobs, you can create one of these files if they don't exist and type in the names of the users you want to allow or deny). Same for `at` (`/etc/at.deny` or `/etc/at.allow`)
 #### at
 - run commands in the future with at
 ```bash
 # at doesn't support seconds
-echo "'This is form at command' > /home/ibra/at.txt" | at now + 1 minute
+echo "'This is from at command' > /home/ibra/at.txt" | at now + 1 minute
 ```
 Or you could use it interactively:
 ```bash
