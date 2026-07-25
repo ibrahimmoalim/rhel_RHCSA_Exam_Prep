@@ -282,7 +282,7 @@ sudo systemctl isolate graphical.target
     - `reboot.target`: System reboot.
     - `poweroff.target`: System shutdown.
 
-## Configure time service clients
+## Configure time service clients ✅
 On RHEL, time synchronization is handled by **chrony** (via the chronyd service). You need to know how to verify NTP synchronization, configure NTP (Network Time Protocol) servers, and manually adjust system time/timezone using timedatectl and chronyc.
 
 - Primary utilities overview
