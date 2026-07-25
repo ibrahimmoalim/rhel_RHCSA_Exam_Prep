@@ -1,6 +1,6 @@
 # Deploy, configure, and maintain systems
 
-## Schedule tasks using at, cron and systemd timer units
+## Schedule tasks using at, cron and systemd timer units ✅
 Automating task execution is a core administration skill. On the exam, you'll be expected to schedule jobs using three distinct mechanisms: one-off execution (`at`), traditional recurring schedules (`cron`), and modern service triggers (`systemd timers`).
 
 ### at
@@ -14,6 +14,7 @@ sudo dnf install at -y
 sudo systemctl enable --now atd
 ```
 - create an `at` job
+
 specify the time, enter interactive mode, type commands, and exit with `ctrl+d`
 ```bash
 # this will open interactive mode
@@ -41,6 +42,7 @@ atrm <job_id>      # delete a scheduled job
 
 To edit your user's crontab safely, always use `crontab -e` (never edit `/etc/crontab` directly unless explicitly asked).
 - run `crontab -e` to schedule cron tasks for current user
+
 It'll be opened in an editor
 ```bash
 # ┌───────────── minute (0 - 59)
@@ -93,6 +95,7 @@ Type=oneshot
 ExecStart=/usr/bin/logger "hello"
 ```
 - create the matching timer unit (`/etc/systemd/system/job_test.timer`)
+
 > Note: the filename prefix MUST match the service name (e.g., job_test.timer targets job_test.service).
 ```Ini
 [Unit]
@@ -135,3 +138,219 @@ systemctl status job_test.timer
 # check if the execution output succeeded via journalctl
 sudo journalctl -u job_test.service
 ```
+
+## Start and stop services and configure services to start automatically at boot ✅
+This objective revolves almost entirely around **`systemctl`**, the primary utility used to control the `systemd` system and service manager.
+
+- Core Service Management Commands
+
+To manage services on a running system, use the following `systemctl` actions:
+```bash
+# Start a service immediately
+sudo systemctl start <service_name>
+
+# Stop a running service
+sudo systemctl stop <service_name>
+
+# Restart a service (stops then starts it again, useful after editing config files)
+sudo systemctl restart <service_name>
+
+# Reload service configuration without stopping it (if supported by the service)
+sudo systemctl reload <service_name>
+
+# Check detailed status, PID, and recent log outputs of a service
+systemctl status <service_name>
+```
+
+- Boot-Time Configuration (Enabling/Disabling)
+
+Controlling whether a service starts automatically when the system boots is distinct from starting or stopping it right now:
+```bash
+# Enable a service to start automatically at boot
+sudo systemctl enable <service_name>
+
+# Disable a service from starting automatically at boot
+sudo systemctl disable <service_name>
+
+# Combined shortcut: Start the service NOW AND enable it for boot in one command
+sudo systemctl enable --now <service_name>
+
+# Combined shortcut: Stop the service NOW AND disable it for boot
+sudo systemctl disable --now <service_name>
+```
+
+- Verification & Troubleshooting Commands
+
+On the RHCSA exam, verifying state quickly is key. Use these fast check options:
+```bash
+# Check if a service is currently active (running) -> returns "active" or "inactive"
+systemctl is-active <service_name>
+
+# Check if a service is enabled to start at boot -> returns "enabled" or "disabled"
+systemctl is-enabled <service_name>
+
+# Check if a service failed during startup
+systemctl is-failed <service_name>
+
+# List all currently active services on the system
+systemctl list-units --type=service --state=running
+
+# List all installed services and whether they are enabled/disabled for boot
+systemctl list-unit-files --type=service
+```
+
+- Masking Services (Exam Trap Alert!)
+
+Sometimes an exam task or troubleshooting question will ask you to completely prevent a service from starting even if another service or administrator tries to start it manually.
+
+```bash
+# Mask a service (links unit file to /dev/null so it cannot be started by any means)
+sudo systemctl mask <service_name>
+
+# Try starting a masked service:
+sudo systemctl start <service_name>
+# Output: Failed to start <service_name>.service: Unit is masked.
+
+# Unmask a service to allow standard operations again
+sudo systemctl unmask <service_name>
+```
+
+- Summary
+
+| Task | Command |
+| --- | --- |
+| **Start right now** | `systemctl start <service>` |
+| **Stop right now** | `systemctl stop <service>` |
+| **Enable on boot** | `systemctl enable <service>` |
+| **Disable on boot** | `systemctl disable <service>` |
+| **Start AND Enable** | `systemctl enable --now <service>` |
+| **Prevent starting completely** | `systemctl mask <service>` |
+
+## Configure systems to boot into a specific target automatically ✅
+A target is essentially a group of system services bundled together to achieve a specific operating state.
+
+- The two main targets:
+
+1. **multi-user.target** (formerly Runlevel 3): Non-graphical, command-line interface (CLI) mode. Loads all networking and multi-user services, but no GUI.
+2. **graphical.target** (formerly Runlevel 5): Full graphical user interface (GUI) desktop mode. Includes everything in **multi-user.target** plus the display manager and graphical desktop.
+
+- Checking the current target
+
+To inspect your system's current default target and running target state:
+```bash
+# Display the target configured to load at boot
+systemctl get-default
+
+# Check the targets currently loaded and active on the system
+systemctl list-units --type=target
+
+# See all targets available to change to
+systemctl set-default <double-tab-to-see-targets>
+```
+
+- Change the default boot target (Persistent)
+
+To change which target the machine boots into automatically upon restart, use set-default:
+```bash
+# Set default boot target to CLI (multi-user)
+sudo systemctl set-default multi-user.target
+
+# Set default boot target to GUI (graphical)
+sudo systemctl set-default graphical.target
+
+# reboot for it to take effect
+sudo reboot
+```
+
+- Verify
+
+Run `systemctl get-default` again to confirm it shows the expected target.
+> How it works under the hood: `systemctl set-default` simply updates a symbolic link at `/etc/systemd/system/default.target` pointing to the target file in `/usr/lib/systemd/system/`
+
+- Switch target immediately (no reboot required, non-persistent)
+```bash
+# Switch current running state to multi-user (CLI)
+sudo systemctl isolate multi-user.target
+
+# Switch current running state to graphical (GUI)
+sudo systemctl isolate graphical.target
+```
+
+- Other important systemd targets to know (while `multi-user` and `graphical` are the primary ones you will configure, you should recognize these for recovery and management):
+    - `rescue.target`: Single-user recovery mode. Mounts root filesystem read-only or read-write with minimal services for repair.
+    - `emergency.target`: Absolute bare-minimum shell. Root filesystem is mounted read-only, no network, used when `fstab` or storage fails completely.
+    - `reboot.target`: System reboot.
+    - `poweroff.target`: System shutdown.
+
+## Configure time service clients
+On RHEL, time synchronization is handled by **chrony** (via the chronyd service). You need to know how to verify NTP synchronization, configure NTP (Network Time Protocol) servers, and manually adjust system time/timezone using timedatectl and chronyc.
+
+- Primary utilities overview
+    - `timedatectl`: Manages system time, date, timezones, and overall NTP enablement.
+    - `chronyc`: The command-line interface to monitor and manage the chronyd daemon.
+    - `/etc/chrony.conf`: The main configuration file for chrony where NTP time servers are defined.
+
+- Managing timezones and local clock (timedatectl)
+```bash
+# check time and NTP status
+timedatectl status
+```
+Look for: `System clock synchronized: yes` and `NTP service: active`
+
+- Listing and setting timezones
+```bash
+# list available timezones matching a region
+timedatectl list-timezones | grep -i africa
+
+# set the system timezone
+sudo timedatectl set-timezone Africa/Mogadishu
+```
+
+- Enable/Disable Network Time Synchronization
+```bash
+# enable automatic NTP synchronization
+sudo timedatectl set-ntp true
+
+# Disable NTP synchronization (required if setting time manually)
+sudo systemctl stop chronyd
+sudo timedatectl set-ntp false
+sudo timedatectl set-time "2026-07-25 10:30:00"
+```
+
+- Configure NTP client servers (`/etc/chrony.conf`)
+
+On the exam, you may be given an NTP server hostname or IP address (e.g., time.example.com or 192.168.55.254) and asked to configure your machine to synchronize with it.
+- edit `/etc/chrony.conf`
+```bash
+sudo vi /etc/chrony.conf
+
+# add the provided NTP server using the server directive
+# in the middle is hostname or ip-addr provided
+# iburst option is for fast initial sync
+server time.example.com iburst
+```
+> comment out or remove any default pool or server lines if the prompt asks to use ONLY the specified server
+
+- Restart and enable chronyd
+```bash
+sudo systemctl restart chronyd
+sudo systemctl enable chronyd
+```
+
+- Verify synchronization (`chronyc`)
+
+Once configured, verify your client is talking to the remote NTP server using chronyc:
+```bash
+# check NTP sources
+chronyc sources -v
+```
+Look for:
+- **^***: The asterisk * next to a server IP/hostname means chronyd has selected it as its current active synchronized source.
+- **^+**: A plus sign means it's an acceptable candidate source.
+- **^?**: A question mark means connectivity is lost or reachability checks failed (check network/firewall).
+
+- Check synchronization tracking details
+```bash
+chronyc tracking
+```
+> Confirms reference server name, stratum, and system offset.
