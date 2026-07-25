@@ -354,3 +354,89 @@ Look for:
 chronyc tracking
 ```
 > Confirms reference server name, stratum, and system offset.
+
+## Install and update software packages from Red Hat Content Delivery Network, a remote repository, or from the local file system ✅
+Package management in RHEL is handled via dnf (Dandified YUM) and the lower-level rpm utility. On the exam, you will be expected to install software from standard registered channels, custom remote repositories, or local standalone .rpm files while automatically resolving dependencies.
+
+### Inspecting and managing repositories
+- list active repos
+```bash
+dnf repolist
+```
+- list all enabled and disabled repos
+```bash
+dnf repolist all
+```
+- configure custom remote repositories
+
+repository definition files live in `/etc/yum.repos.d/`. To add a remote repo, create a `.repo` file:
+```Ini
+[custom-remote]
+name=Custom remote repo
+baseurl=<http-link-provided-in-exam>
+enabled=1
+# make this zero if no gpg-key specified
+gpgcheck=1
+# don't add below line if no gpgkey specified
+gpgkey=file:///etc/pki/rpm-gpg/....
+```
+- clear dnf cache (useful if metadata gets corrupted)
+```bash
+sudo dnf clean all
+sudo dnf makecache
+```
+
+### Installing and updating packages via dnf
+Whether pulling from the Red Hat Content Delivery Network (CDN) or a custom remote repository, the syntax remains the same.
+
+- search for a pkg or file provider
+```bash
+dnf search <pkg-name>
+# if you know the command but not the package name
+dnf provides */<command>
+```
+- install a pkg
+```bash
+sudo dnf install <pkg-name> -y
+```
+- update/remove
+```bash
+# update a specific pkg
+sudo dnf update <pkg-name>
+# update all system pkgs
+sudo dnf update -y
+# remove a pkg
+sudo dnf remove <pkg-name>
+```
+
+### Installing from the local file system
+The exam will often drop a raw `.rpm` file somewhere on your hard drive (e.g., in `/tmp` or a mounted directory) and ask you to install it.
+
+To practice for this on a VM, download a pkg into a dir and then install it locally:
+```bash
+# for example download tree (if you don't have it already)
+sudo dnf download --destdir=/tmp tree
+```
+```bash
+# verify it's there
+ls -la /tmp/*.rpm
+```
+> You'll see something like /tmp/tree-1.8.0-10.el9.x86_64.rpm
+
+- there are two methods of doing this:
+    - `dnf`: dnf is always preferred because if the local package requires other software dependencies, dnf will automatically scan your repositories, download the missing pieces, and install everything cleanly.
+    ```bash
+    sudo dnf install /path/to/pkg-name.rpm
+    ```
+    - `rpm (lower-lvl tool)`: The rpm command installs a package directly, but it will fail if there are unmet dependencies, throwing an error instead of fetching them for you.
+    ```bash
+    # Install or upgrade a local RPM package
+    sudo rpm -ivh /path/to/file/package_name.rpm
+
+    # Useful rpm flags:
+    # -i : Install
+    # -v : Verbose output
+    # -h : Hash marks (progress bar)
+    # -U : Upgrade an existing package (or install if not present)
+    # -q : Query a package (e.g., rpm -qPi file.rpm to inspect it)
+    ```
