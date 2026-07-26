@@ -1,4 +1,4 @@
-# Deploy, configure, and maintain systems
+# Deploy, configure, and maintain systems ✅
 
 ## Schedule tasks using at, cron and systemd timer units ✅
 Automating task execution is a core administration skill. On the exam, you'll be expected to schedule jobs using three distinct mechanisms: one-off execution (`at`), traditional recurring schedules (`cron`), and modern service triggers (`systemd timers`).
@@ -440,3 +440,82 @@ ls -la /tmp/*.rpm
     # -U : Upgrade an existing package (or install if not present)
     # -q : Query a package (e.g., rpm -qPi file.rpm to inspect it)
     ```
+
+## Modify the system bootloader ✅
+On RHEL, managing persistent kernel options and GRUB settings used to mean editing /etc/default/grub and running grub2-mkconfig. While that still works, Red Hat's standard, official tool for RHCSA is grubby. grubby makes direct, safe bootloader changes without risking broken syntax in complex configuration files.
+
+### grubby
+- Inspecting Bootloader Settings (grubby)
+
+Before modifying anything, always check what kernel is currently set as default and what arguments it uses.
+```bash
+# Check the default kernel path
+sudo grubby --default-kernel
+
+# Display detailed info (kernel path, index, args) for the default kernel
+sudo grubby --info=DEFAULT
+
+# List information for ALL installed kernels
+sudo grubby --info=ALL
+```
+
+- Adding or Removing Kernel Parameters
+
+A common exam task is adding a persistent boot parameter (like enabling serial console logs, disabling quiet boot, or adding custom security flags).
+
+Common args:
+- `console=ttyS0` or `console=tty0`: Directs boot messages to a specific serial port or screen output.
+- `quiet`: Suppresses non-critical kernel log messages during boot (gives a clean boot screen).
+- `rhgb`: Enables Red Hat Graphical Boot (shows the splash screen instead of scrolling text).
+- `systemd.debug-shell=1`: Spawns a root shell on terminal 9 (Ctrl+Alt+F9) for debugging boot failures.
+- `selinux=0` or `enforcing=0`: Disables or sets SELinux state at boot.
+- `audit=1`: Enables kernel-level auditing.
+
+Adding Parameters (--args), to add a new parameter to the default kernel:
+```bash
+sudo grubby --update-kernel=DEFAULT --args="console=ttyS0"
+```
+Removing Parameters (--remove-args), to remove an existing parameter from the default kernel:
+```bash
+# if u use 'ALL', it'll update for all installed kernels
+sudo grubby --update-kernel=ALL --remove-args="quiet rhgb"
+```
+Verification step:
+```bash
+# look at args and see if changes were applied
+sudo grubby --info=DEFAULT
+```
+
+- Changing the Default Kernel
+
+If a kernel update broke system functionality or the exam asks you to set an older/newer installed kernel as default:
+```bash
+# First, list all kernels to find the full path of the target kernel
+sudo grubby --info=ALL | grep ^kernel
+
+# Set the default kernel using its full path
+sudo grubby --set-default=/boot/vmlinuz-5.14.0-xxx.el9.x86_64
+```
+
+### /etc/default/grub
+While grubby handles kernel flags and defaults, if you need to change the **boot menu timeout** (how many seconds GRUB waits before auto-booting), you edit /etc/default/grub:
+1. Open /etc/default/grub:
+```bash
+sudo vi /etc/default/grub
+```
+2. Modify or add the timeout line:
+```
+GRUB_TIMEOUT=10
+```
+3. Rebuild the GRUB configuration to save changes persistently:
+    - On UEFI systems (most modern RHEL installations):
+    ```bash
+    sudo grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
+    ```
+    - On BIOS / Legacy systems:
+    ```bash
+    sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+    ```
+> Tip: On RHEL 8/9/10, pointing `grub2-mkconfig -o /etc/grub2.cfg` works on both BIOS and UEFI because `/etc/grub2.cfg` is a **symlink** to the correct location.
+
+> Note: `grub2-mkconfig` is only required after modifying `/etc/default/grub` to make the changes persistent, not after using `grubby` (grubby writes the changes directly into the active GRUB configuration file on disk immediately.)
