@@ -262,8 +262,15 @@ sudo useradd -m -s /bin/bash <new user's name>
 ```
 > -m gives it home dir and pull files from `/etc/skel`, -s defines shell (default is /bin/sh)
 #### passwd
-When you create a user you have to give them a password to switch to that user
-`sudo passwd <user-name>` => change password for a user
+When you create a user you have to give them a password to switch to that user:
+```bash
+# change password for a user
+sudo passwd <user-name>
+
+# force a user to change pass on next login
+# (-e means expire)
+sudo passwd -e <user-name>
+```
 > Note: only change password through this command, and not through `usermod` because `usermod` doesn't hash the pass.
 #### usermod
 You can use this as a settings for user management if you forgot some options in `useradd` command, you can do them here, e.g:
@@ -285,8 +292,10 @@ sudo usermod --lock <user-name>
 # or -U
 sudo usermod --unlock <user-name>
 ```
-#### deluser
-`sudo deluser <user-name>` => deletes user from system
+#### userdel
+`sudo userdel <user-name>` => deletes user from system
+
+`sudo userdel -r <user-name>` => deletes user from system and wipes home dir + mail spool for that user
 #### chage (change age)
 - `sudo chage -M 60 <user-name` => sets the maximum number of **days** a password is valid to 60.
     - If their password is 10 days old: They will be forced to change it in 50 days.
