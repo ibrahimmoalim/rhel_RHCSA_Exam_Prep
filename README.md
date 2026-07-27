@@ -694,7 +694,7 @@ sudo wall "System updates starting in 10 minutes. Please save your work and paus
 ## vim notes
 
 - `:r !cat vimrc` => this is used to copy contents of a file into the file you currently have open in vim, in this instance `vimrc` contents will be put into the current file open in vim. You can use any command and get it's output copied into the editor where your cursor is (here we are using cat)
-- gg => go to top of file (while is `esc` mode)
+- gg => go to top of file (while in `esc` mode)
 - G => go to bottom of file
 - yy => copy line
 - p => paste line
