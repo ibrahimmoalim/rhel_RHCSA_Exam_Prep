@@ -342,14 +342,18 @@ sudo gpasswd -d <user-name> <group-name>
 sudo groupdel <group-name>
 ```
 
-### especial permissions (rws)
-> Note: If you see a capitalized S (like -rw-r-S---), it means the SUID/SGID bit is set, but the underlying file/directory is missing the execute (x) permission. A lowercase s means everything is configured correctly.
+### especial permissions (SUID, SGID, Sticky Bit)
 - SUID (Set User ID)
-Runs binary as the file owner
+Allows a binary to execute with the privileges of the file's owner (usually root), rather than the user running the command.
+
+Example: /usr/bin/passwd uses SUID so normal users can update /etc/shadow.
+
 ```bash
 # or `chmod 4755 <file>`
 sudo chmod u+s <file>
 ```
+> Note: If you see a capitalized S (like -rw-r-S---), it means the SUID/SGID bit is set, but the underlying file/directory is missing the execute (x) permission. A lowercase s means everything is configured correctly.
+
 - SGID (Set Group ID)
 This is done for shared directories, where multiple users in the same group own a directory (Files inherit parent directory's group)
 ```bash
@@ -361,8 +365,12 @@ sudo chmod g+s /path/to/dir
 drwxrws--T   2 root    sharedGroup 4096 Jun 24 13:59 sharedDir
 ```
 > Focus on the group part `rws`, Anyone in sharedGroup can read, write, and enter. (The 's' means new files inherit this group, so any directories (it automatically inherits the SGID bit (s) too for directories) or files created inside that sharedDir will have be owned by `sharedGroup`).
+
 - Sticky Bit
-Used for configuring shared directories where users can't delete each other's files (doesn't do anything when applied to individual files)
+Used for configuring shared directories so users can't delete each other's files (doesn't do anything when applied to individual files)
+
+Example: The /tmp directory uses the sticky bit so users don't delete each other's temporary files.
+
 ```bash
 # or `chmod 1777 /path/to/dir`
 sudo chmod o+t /path/to/dir
@@ -371,7 +379,10 @@ sudo chmod o+t /path/to/dir
 ```bash
 # the 'T' means users in this dir won't be able to delete each others
 # files even though they share the same group (only root/sudoers/admins
-# and file owner can delete the file)
+# and file owner can delete the file).
+# If it's shown as capital 'T', then Sticky bit IS set, BUT execution (x)
+# is NOT granted to others, you can fix this by doing
+# 'sudo chmod o+xt /sharedDir'
 drwxrws--T   2 root    sharedGroup 4096 Jun 24 13:59 sharedDir
 ```
 - find all SUID and SGID files on the system
