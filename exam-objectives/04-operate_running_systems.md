@@ -100,10 +100,12 @@ exec /sbin/init
 
 ## Identify CPU/memory intensive processes and kill processes ✅
 To track down resource hogs, we can use either `top`(interactive)(`htop` won't be available on the exam as it's un-official package, it won't be in the offline repo list either) or `ps`(snapshot/scriptable).
+
 - Run `top` in the terminal, it updates every 3 seconds. To sort the list instantly while it's running, use these shortcuts:
     - Press M (shift+m) to sort by Memory usage
     - Press P (shift+p) to sort by CPU usage
     - Press q to exit
+
 - For the scriptable way (`ps`), to get the top 5 resource-heavy processes, use these:
 ```bash
 # find the top 5 CPU-hogging processes
@@ -112,18 +114,22 @@ ps aux --sort=-%cpu | head -n 6
 # find the top 5 Memory-hogging processes
 ps aux --sort=-%mem | head -n 6
 ```
+
 - Terminate processes safely
+
 Try a Gracefull Kill (signal 15, which is default). It tells the application, "Please save the work, close the open files, and shut down cleanly."
 ```bash
 # or simple do: kill <PID>
 # since -15 is default
 kill -15 <PID>
 ```
+
 - Force kill a process
 ```bash
 kill -9 <PID>
 ```
 - kill by name
+
 If you have multiple instances of a process running (like a rogue script or web worker) and you don't want to hunt down every single PID, use pkill or killall:
 ```bash
 # kills all running processes named "httpd" gracefully
@@ -132,7 +138,9 @@ pkill httpd
 # force kill
 pkill -9 <process-name>
 ```
+
 - On the exam, Red Hat might give you a scenario where a specific user or background process is consuming resources or blocking a port.
+
 If a task tells you to "Terminate all processes owned by user 'ali'", you don't have to manually hunt every PID down. Just use the `-u` flag:
 ```bash
 sudo pkill -u ali
@@ -142,6 +150,7 @@ sudo pkill -u ali
 This means changing how the Linux kernel prioritizes CPU access for different tasks.
 
 On the exam, you will be expected to know how to start a new task with a specific priority or alter the priority of an already running process.
+
 - Linux uses `nice` values to control process priority
     - think of it as how "nice" a process is to other processes on the system
     - the scale runs from `-20` to `19`
@@ -195,7 +204,7 @@ ps -eo pid,ni,comm | grep my_app
 ## Manage tuning profiles ✅
 Managing tuning profiles in RHEL revolves around the `tuned` system. It is a background service that dynamically optimizes system settings (like disk scheduling, CPU governors, and network buffers) based on the specific workload profile you select.
 
-if the system doesn't have `tuned-adm` and `tuned` command, install it with:
+If the system doesn't have `tuned-adm` and `tuned` command, install it with:
 ```bash
 sudo dnf install tuned
 ```
@@ -205,20 +214,24 @@ sudo systemctl enable --now tuned
 ```
 
 - checking the current state
+
 Before changing anything, run this:
 ```bash
 tuned-adm active
 ```
 > output example: current active profile: virtual-guest
+
 - list all available profiles on the system
 ```bash
 tuned-adm list
 ```
+
 - let the system choose a profile
 If you aren't sure which profile is best for the current hardware configuration, `tuned` can analyze the environment and give you a recommendation.
 ```bash
 tuned-adm recommend
 ```
+
 - switch profiles (To change the profile, use the `profile` subcommand. This change takes effect immediately and remains permanent across system reboots.)
     - switch to a specific profile
     ```bash
@@ -230,7 +243,9 @@ tuned-adm recommend
     ```bash
     tuned-adm active
     ```
+
 - turn off tuning
+
 Sometimes an exam task or a troubleshooting scenario might ask you to completely disable dynamic tuning to isolate a performance issue.
 ```bash
 # turn off tuning entirely
@@ -246,28 +261,36 @@ RHEL uses a dual-logging system: traditional plain-text log files (managed by `r
 
 ### Traditional Text Logs (`/var/log/`)
 These are plain text files. You can read them using tools like `cat`, `less`, `tail`, or `grep`.
+
 - `var/log/messages` -> The catch-all log for general system messages, global scripts, and non-authentication errors.
+
 - `/var/log/secure` -> The security vault. It logs every `sudo` attemp, SSH login. password failure, and user/group creation.
+
 - `/var/log/dnf.log` -> Shows what packages were installed, updated, or deleted and when.
 
 ### Modern Binary Logging (`journalctl`)
 The systemd journal captures everything from early boot messages to application crashes. Because it is a binary format, you cannot open it with `less` or `cat`. You must use `journalctl`.
+
 - Filter by service
 ```bash
 # -u means unit
 journalctl -u httpd.service
 ```
+
 - Filter by severity
+
 See only warnings, critical issues, or errors:
 ```bash
 # -p means priority
 journalctl -p err
 ```
+
 - Filter by time
 ```bash
 journalctl --since "15 minutes ago"
 journalctl --since "2026-07-09 10:00:00"
 ```
+
 - LIve track (like `tail -f`)
 ```bash
 journalctl -f
@@ -275,29 +298,36 @@ journalctl -f
 
 ## Preserve system journals ✅
 By default on many RHEL installations, the systemd journal is ephemeral. This means all those detailed boot and service logs are stored in a temporary RAM directory (`/run/log/journal/`). The moment you reboot or shut down the machine, the logs disappear forever.
+
 - make the journal persistent
 ```bash
 # it doesn't matter if the file already exists or not
 sudo vi /etc/systemd/journald.conf
 ```
+
 - type the required section header and parameter
 ```bash
 [Journal]
 Storage=persistent
 ```
+
 - save, exit, and restart the service
 ```bash
 sudo systemctl restart systemd-journald.service
 ```
+
 - generate the proper directory with correct user and ownership
 ```bash
 sudo systemd-tmpfiles --create --prefix /var/log/journal
 ```
+
 - flush the memory to the disk
+
 Right now, the logs are still sitting in the temporary RAM cache. You need to explicitly tell the daemon to dump everything from RAM onto the newly configured disk space:
 ```bash
 sudo journalctl --flush
 ```
+
 - verify
 ```bash
 ls -la /var/log/journal/
@@ -306,16 +336,21 @@ ls -la /var/log/journal/
 
 ## Start, stop, and check the status of network services ✅
 Managing network services in RHEL 10 relies entirely on `systemctl`, the primary control interface for `systemd`.
+
 - these are the regular, `start`, `stop`, and `restart`(after making major configuration changes to an application) operations.
+
 - restart without dropping active connections with `reload` is service supports it
+
 - the persistence operations (They do not start or stop the service immediately on their own)
     - enable a service to start at boot with `enable`
     - disable a service from starting at boot with `disable`
+
 - instead of running `start` then `enable` as two seperate commands, you can combine them with:
 ```bash
 sudo systemctl enable --now httpd
 ```
 > this instantly stars Apache and sets it to auto-start on every future boot
+
 - check status with `status`, when looking at the output, pay attention to:
     - `Loaded` -> shows if it's `enabled` or `disabled` for the next boot.
     The `vendor preset` (or just `preset:`) tells you the original out-of-the-box state that the developers intended for that service when the package was first installed.
@@ -327,12 +362,15 @@ sudo systemctl enable --now httpd
                                             The Current Setting   Default Setting
     ```
     - `Active` -> shows if it's currently `active (running)` or `inactive (dead)`.
+
 - change back to defaults
+
 If you have heavily modified several services and want to quickly revert a specific service back to whatever Red Hat originally intended, you don't have to look up the documentation. You can tell `systemctl` to read that preset value directly:
 ```bash
 sudo systemctl preset sshd
 ```
 - the `mask` trap
+
 If a service is completely broken, or if the exam wants to prevent a service from ever being started by another process or user, you can mask it. A masked service is linked to `/dev/null` and cannot be started manually or automatically until it is unmasked.
 ```bash
 # completely lock down a service
@@ -352,7 +390,8 @@ ssh-keygen
 > this creates a private key and a public key (ending in .pub) inside ~/.ssh/
 
 - copy the public key to the remote server
-ssh connection must be already established to the remote server with the use of password, and user must already exist in remote server (this key will make you connect without password in the future)
+
+remote server must be reachable via SSH with the use of password, and user must already exist in remote server (this key will make you connect without password in the future)
 ```bash
 ssh-copy-id user@remote-server-ip
 ```
@@ -364,8 +403,10 @@ ssh user@remote-server-ip
 ```
 
 - securely copy files or directories between servers
+
 Once SSH is set up securely, you will use it as the transport layer to sync files between systems.
 - using `scp` (secure copy)
+
 great for simple, one-time file or dir transfers.
 ```bash
 # copy local file to a remote server's /tmp dir
@@ -375,6 +416,7 @@ scp /path/to/file user@remote-server-ip:/tmp/
 scp -r user@remote-server-ip:/var/www/html/ ./local_backup/
 ```
 - using `rsync` (remote sync)
+
 `rsync` is highly preferred for large dirs because it only copies the diff between files, saving massive amounts of time and bandwidth.
 ```bash
 # sync a local folder to a remote machine cleanly
