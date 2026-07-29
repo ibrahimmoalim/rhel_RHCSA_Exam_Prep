@@ -1,5 +1,6 @@
 # Manage security
 
+
 ## Configure firewall settings using firewall-cmd/firewalld ✅
 
 ### Firewalld Zones Overview
@@ -66,7 +67,8 @@ sudo firewall-cmd --reload
 ```
 > You can test and practice with this by installing an apache server(httpd pkg), then setting it to listen on port 8080 (default is 80) by changing apache config in `/etc/httpd/conf/httpd.conf` then restarting `httpd.service`. Use the above commands to do the port forwarding and test connection from a remote device that you have a connection to by doing `curl <host-device-ip-addr>` on remote device.
 
-## Manage default file permissions
+
+## Manage default file permissions ✅
 
 The umask (user file-creation mask) defines which permissions are subtracted from the base maximum when a new file or directory is created.
 
@@ -116,3 +118,130 @@ umask 0022
 ```
 
 [Notes for Special Permissions (SUID, SGID, Sticky Bit)](https://github.com/ibrahimmoalim/rhel_RHCSA_Exam_Prep#especial-permissions-suid-sgid-sticky-bit)
+
+
+## Configure key-based authentication for SSH ✅
+
+- Generate `ssh` key on client machine
+```bash
+# hit enter to accept all defaults
+ssh-keygen
+```
+> this creates a private key and a public key (ending in .pub) inside ~/.ssh/
+
+- Copy the public key to the remote server
+remote server must be reachable via SSH with the use of password, and user must already exist in remote server (this key will make you connect without password in the future)
+```bash
+ssh-copy-id user@remote-server-ip
+```
+> you will be prompted to type the remote user's password one last time to authorize the transfer, the pub key will be added to remote servers authorized keys.
+
+- Test it
+```bash
+ssh user@remote-server-ip
+```
+
+- Disable Password Authentication (Server Hardening)
+
+Exam questions often ask you to enforce SSH key authentication by disabling password logins altogether on the server.
+
+Open the main SSH daemon config:
+```bash
+# don not confuse it with another file: /etc/ssh/ssh_config
+# the real one has 'd' "sshd_config"
+sudo vi /etc/ssh/sshd_config
+```
+Ensure the following directives are set:
+```bash
+PasswordAuthentication no
+PubkeyAuthentication yes
+```
+Apply Changes:
+```bash
+# test config syntax first
+# if nothing is returned you're all good.
+sudo sshd -t
+
+# restart the SSH service
+sudo systemctl restart sshd
+```
+
+- If you encounter any erros:
+    - make sure the `~/.ssh/` dir has drwx------
+    - make sure the `~/.ssh/authorized_keys` file has -rw-------
+    - check if the remote server has SSH on a different port, if it has, then use: `ssh-copy-id -p <port> user@remote-ip`
+
+
+## Set enforcing and permissive modes for SELinux ✅
+
+### The Three SELinux Modes
+
+| Mode | Behavior | Exam Impact |
+| --- | --- | --- |
+| **`Enforcing`** | Enforces security policy. Access is denied and logged if a violation occurs. | **Default RHEL state.** Required on the exam unless stated otherwise. |
+| **`Permissive`** | SELinux policy is **not** enforced, but violations are still logged. | Great for troubleshooting issues without turning off SELinux completely. |
+| **`Disabled`** | SELinux is completely turned off. | **Never do this on the exam!** Disabling requires a reboot to re-enable, and relabeling the filesystem takes time. |
+
+### Checking the Current Mode
+
+To view your current SELinux status, use either of these commands:
+
+```bash
+# Quick check (returns: Enforcing, Permissive, or Disabled)
+getenforce
+
+# Detailed report (shows current mode, config file mode, policy name, etc.)
+sestatus
+```
+
+### Changing Modes Temporarily (Runtime Only)
+
+To switch modes immediately without rebooting (resets upon system restart):
+
+```bash
+# Set mode to Permissive (0)
+sudo setenforce 0
+# OR
+sudo setenforce Permissive
+
+# Set mode to Enforcing (1)
+sudo setenforce 1
+# OR
+sudo setenforce Enforcing
+```
+
+### Changing Modes Persistently (Survives Reboot)
+
+For changes to survive a system reboot, you **must edit the configuration file**.
+
+#### Configuration File Path
+
+`/etc/selinux/config` *(Note: `/etc/sysconfig/selinux` is a symlink to this file).*
+
+#### How to Edit
+
+1. Open `/etc/selinux/config` in your editor:
+```bash
+sudo vi /etc/selinux/config
+```
+
+2. Modify the `SELINUX=` line:
+```text
+SELINUX=enforcing
+# OR
+SELINUX=permissive
+```
+
+3. Save and exit.
+
+4. Check SELinux Status with `sestatus`, check the lines **Current mode** (shows what you set with `sudo setenforce`and currently using) and **Mode from config file** (shows persistent mode, which will be used after reboot even if not currently set).
+
+### Exam Tip
+A very common RHCSA task asks you to set SELinux to **`permissive`** or **`enforcing`**.
+
+If you only run `setenforce 0`, the system will revert back to its old mode when the exam grading script reboots your machine!
+
+**Always do BOTH for full credit:**
+
+1. Update `/etc/selinux/config` (for persistence).
+2. Run `setenforce <mode>` (so the current session matches immediately without needing a reboot).
