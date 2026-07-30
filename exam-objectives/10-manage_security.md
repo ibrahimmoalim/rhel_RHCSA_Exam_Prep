@@ -101,7 +101,7 @@ So the calculation for 666-027 went like this:
 # Check current umask in octal
 umask
 
-# Set temporary umask for your current terminal session
+# Set temporary umask for the current terminal session
 umask 0022
 
 # Set persistent umask for current user
@@ -184,7 +184,7 @@ sudo systemctl restart sshd
 
 ### Checking the Current Mode
 
-To view your current SELinux status, use either of these commands:
+To view the current SELinux status, use either of these commands:
 
 ```bash
 # Quick check (returns: Enforcing, Permissive, or Disabled)
@@ -220,7 +220,7 @@ For changes to survive a system reboot, you **must edit the configuration file**
 
 #### How to Edit
 
-1. Open `/etc/selinux/config` in your editor:
+1. Open `/etc/selinux/config` in the editor:
 ```bash
 sudo vi /etc/selinux/config
 ```
@@ -239,9 +239,145 @@ SELINUX=permissive
 ### Exam Tip
 A very common RHCSA task asks you to set SELinux to **`permissive`** or **`enforcing`**.
 
-If you only run `setenforce 0`, the system will revert back to its old mode when the exam grading script reboots your machine!
+If you only run `setenforce 0`, the system will revert back to its old mode when the exam grading script reboots the machine!
 
 **Always do BOTH for full credit:**
 
 1. Update `/etc/selinux/config` (for persistence).
 2. Run `setenforce <mode>` (so the current session matches immediately without needing a reboot).
+
+
+## List and identify SELinux file and process context ✅
+**Understanding SELinux contexts for files and processes is essential because most SELinux issues on the exam come down to standard tools (like `cp` or `tar`) creating files with the wrong label.**
+
+SELinux uses labels (contexts) attached to processes and files to determine what a process is allowed to do.
+
+### SELinux Context Format
+
+A SELinux label consists of four fields separated by colons:
+
+user:role:type:level/sensitivity
+
+- **Example:** `unconfined_u:object_r:httpd_sys_content_t:s0`
+
+### The Field That Matters for RHCSA: **Type (`type`)**
+
+For the RHCSA exam, **99% of the focus will be on the Type field** (the third field, ending in `_t`, like `httpd_sys_content_t` or `ssh_home_t`).
+
+- **Targeted Policy:** SELinux enforcement primary relies on **Type Enforcement**. If a process running with context type `httpd_t` tries to read a file with context type `user_home_t`, SELinux blocks it!
+
+### Listing and Identifying File Contexts
+
+Standard Linux utilities use the **`-Z`** flag to display SELinux security contexts.
+
+- Viewing File & Directory Contexts (`ls -Z`)
+```bash
+ls -Z /var/www/html
+```
+> **Output example:**
+```text
+unconfined_u:object_r:httpd_sys_content_t:s0 index.html
+```
+> Here, `httpd_sys_content_t` is the file **type context**.
+
+
+- View directory context itself (using -d)
+```bash
+ls -Zd /var/www/html
+```
+> or use the prev command with `ls -laZ` (the . is dir line)
+
+### Listing and Identifying Process Contexts
+
+Processes also have SELinux contexts. When a process runs, it inherits an operational type context.
+
+- Viewing Running Process Contexts (`ps -efZ` or `ps auxZ`)
+
+```bash
+ps -efZ | grep httpd
+```
+> **Output example:**
+```text
+system_u:system_r:httpd_t:s0      root  1234  1  0  10:00 ?  00:00:00 /usr/sbin/httpd
+```
+
+- The process type is **`httpd_t`**.
+- Because `httpd_t` has permission to read files labeled `httpd_sys_content_t`, Apache can serve Web pages stored under `/var/www/html`.
+
+### Viewing Port Contexts (`semanage port -l`)
+
+Services are also restricted to binding only to specific network ports.
+
+```bash
+# List all network port contexts
+sudo semanage port -l
+
+# Check ports allowed for HTTP web traffic
+sudo semanage port -l | grep http_port_t
+```
+> **Output example:**
+```text
+http_port_t     tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
+```
+
+### Summary
+
+| Command | Purpose |
+| --- | --- |
+| **`ls -Z /path`** | View file and directory SELinux contexts |
+| **`ls -Zd /path`** | View directory SELinux context (without listing contents) |
+| **`ps -efZ  grep <service>`** | View SELinux context of a running process |
+| **`semanage port -l`** | View SELinux port context mapping |
+
+
+## Restore default file contexts ✅
+SELinux relies on file labels (contexts) to determine access permissions. If a file or directory has the wrong label, often caused by using `mv` instead of `cp`, services like Apache, SSH, or Samba will be blocked, even if standard Linux file permissions (chmod/chown) are correct.
+
+### Understanding the Policy Database vs. Active Labels
+
+SELinux maintains a policy database that defines what label every path on the system should have.
+
+- Active Label: What is currently assigned to a file on disk.
+- Policy Database: The master reference list (stored under `/etc/selinux/targeted/contexts/files/`).
+
+Restoring default contexts means telling SELinux to check the master policy database and re-apply those defined default labels back onto your files.
+
+### Key Tools
+- View active SELinux context of files/directories
+```bash
+# View current active label on disk
+ls -Z
+```
+- Query the policy database to see what context should be applied
+```bash
+# match path context (Check what SELinux policy expects for that path)
+matchpathcon <full-path-to-file-or-dir>
+```
+- Modify or add rules to the SELinux policy database
+```bash
+# this is using full path (assume custom-web dir is in /)
+sudo semanage fcontext -a -t httpd_sys_content_t "/custom-web(/.*)?"
+```
+> -a: add a rule, -t httpd_sys_content_t: Specify the SELinux type, "/custom-web(/.*)?": Regex ensuring the directory and everything underneath it gets matched (for files just use the full path).
+- Apply the policy database rules to actual files/directories on disk
+```bash
+# restore contexts recursively with verbose output
+sudo restorecon -Rv /custom-web
+```
+> -R: recursive (apply to subdirectories and files), -v: verbose
+
+### Common Exam Pitfall: `mv` vs `cp`
+
+When you create a file in `/tmp` or `/root` and move it with `mv`, it retains its original SELinux context (`user_tmp_t` or `admin_home_t`).
+
+```bash
+# Scenario: File moved into web directory keeps old label
+mv /tmp/index.html /var/www/html/
+
+# System blocks web server access because context is user_tmp_t!
+# Fix it immediately with restorecon (it'll get the httpd context
+# because it's under /var/www/...):
+restorecon -v /var/www/html/index.html
+```
+
+> Tip: Using `cp` generates a new file, which automatically inherits the parent directory's default context. Using `mv` carries over the source file's context. Always run `restorecon -Rv` on target directories when moving files around.
