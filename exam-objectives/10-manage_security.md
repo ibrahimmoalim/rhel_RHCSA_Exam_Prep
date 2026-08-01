@@ -1,4 +1,4 @@
-# Manage security
+# Manage security ✅
 
 
 ## Configure firewall settings using firewall-cmd/firewalld ✅
@@ -362,6 +362,7 @@ sudo semanage fcontext -a -t httpd_sys_content_t "/custom-web(/.*)?"
 - Apply the policy database rules to actual files/directories on disk
 ```bash
 # restore contexts recursively with verbose output
+# if you're restoring context for a single file, you don't need -R
 sudo restorecon -Rv /custom-web
 ```
 > -R: recursive (apply to subdirectories and files), -v: verbose
@@ -376,8 +377,122 @@ mv /tmp/index.html /var/www/html/
 
 # System blocks web server access because context is user_tmp_t!
 # Fix it immediately with restorecon (it'll get the httpd context
-# because it's under /var/www/...):
-restorecon -v /var/www/html/index.html
+# because it's under /var/www/...)
+sudo restorecon -v /var/www/html/index.html
 ```
 
 > Tip: Using `cp` generates a new file, which automatically inherits the parent directory's default context. Using `mv` carries over the source file's context. Always run `restorecon -Rv` on target directories when moving files around.
+
+
+## Manage SELinux port labels ✅
+Just like SELinux uses file contexts to restrict which files a process can read, it uses port labels to control which network ports a service is allowed to bind to (listen on).
+
+### Why Manage Port Labels?
+By default, SELinux allows network services to run only on their standard, well-known ports.
+- **Example**: Apache (httpd) is allowed to bind to TCP port 80 or 443 (http_port_t).
+- **The Problem**: If you configure Apache to listen on a non-standard port (like port 8088), SELinux will block Apache from starting, throwing a "Permission Denied" error during socket binding, even if firewalld/iptables allows port 8088!
+
+### Key Commands for the Exam
+
+| Command | Purpose |
+| --- | --- |
+| `semanage port -l` | List all existing port label definitions in SELinux. |
+| `semanage port -a -t <type> -p <proto> <port>` | **Add** a new port to a specific SELinux type. |
+| `semanage port -m -t <type> -p <proto> <port>` | **Modify** an existing port binding to belong to a new type. |
+| `semanage port -d -t <type> -p <proto> <port>` | **Delete** a custom port definition you added. |
+
+
+### The RHCSA Port Label Workflow
+Here is how you tackle SELinux port assignments in the exam step-by-step.
+
+1. **Identify Existing Port Types:** Find the correct SELinux port type.
+Check what port types exist for your service (e.g., HTTP, SSH, Samba) using `semanage port -l` filtered with `grep`:
+```bash
+# Find all SELinux port rules related to HTTP
+sudo semanage port -l | grep http_port_t
+```
+*Output example:*
+`http_port_t   tcp    80, 81, 443, 488, 8008, 8009, 8443, 9000`
+
+2. **Assign the New Port to the SELinux Type:** Allow the service on a non-standard port.
+Suppose your exam task asks you to configure web services (`httpd`) to listen on **TCP port 8088**. You must inform SELinux about this custom port:
+```bash
+# Add (-a) TCP (-p tcp) port 8088 to type (-t) http_port_t
+sudo semanage port -a -t http_port_t -p tcp 8088
+```
+
+3. **Verify the Port Mapping:** Ensure SELinux accepted the update.
+Run the list command again to confirm your port is listed under the target type:
+```bash
+sudo semanage port -l | grep http_port_t
+```
+
+#### Extra
+> Allowing a port in SELinux **does not** automatically open it in your firewall! On the RHCSA exam, non-standard service configurations usually require **both**:
+> 1. `semanage port -a -t ...` (allows the local daemon to bind to the port)
+> 2. `firewall-cmd --add-port=... --permanent` (allows external network traffic through)
+
+
+## Use Boolean settings to modify system SELinux settings ✅
+SELinux Booleans are simple on/off switches (true/false, 1/0) built into the SELinux policy. They allow you to tweak security behavior on the fly, like permitting web servers to read user home directories or send emails, without writing custom policy modules or editing complex code.
+
+### Key Commands for the Exam
+
+| Command | Purpose |
+| --- | --- |
+| `getsebool -a` | List all available Booleans and their current state (on/off). |
+| `getsebool <boolean_name>` | View the status of a specific Boolean. |
+| `semanage boolean -l` | List Booleans with descriptions explaining what each switch does. |
+| `setsebool <boolean> <on-or-off>` | Change a Boolean state temporarily (resets upon reboot). |
+| `setsebool -P <boolean> <on-or-off>` | Change a Boolean state permanently (persists across reboots). |
+
+### The RHCSA Boolean Workflow
+Here is how you handle SELinux Booleans step-by-step during the exam.
+
+1. Locate the Relevant Boolean
+
+You usually won't remember exact Boolean names. Use getsebool -a paired with grep to find the one matching your service (e.g., httpd, ftp, samba, nfs).
+```bash
+# Find all web server (httpd) related Booleans
+getsebool -a | grep httpd
+```
+If you aren't sure what a Boolean does, use semanage to view detailed descriptions:
+```bash
+sudo semanage boolean -l | grep httpd_enable_homedirs
+```
+
+2. Inspect Current State
+
+Check whether the target Boolean is currently on or off:
+```bash
+getsebool httpd_enable_homedirs
+```
+> Output (it's off by default): httpd_enable_homedirs --> off
+
+3. Enable/Disable the Boolean with `-P` (Permanent)
+
+To allow Apache to serve user home directories, toggle the Boolean to on:
+```bash
+# The -P flag writes the change permanently to disk
+# always use it so the change survives reboot
+sudo setsebool -P httpd_enable_homedirs on
+```
+> Note: Running `setsebool -P` can take 5 to 15 seconds to finish because it recompiles parts of the policy in memory.
+
+4. Verify the Update
+```bash
+getsebool httpd_enable_homedirs
+```
+> Output: httpd_enable_homedirs --> on
+
+### High-Frequency Exam Booleans
+
+Keep an eye out for these commonly tested service requirements on the RHCSA exam:
+
+| Service Goal | Boolean Name |
+| --- | --- |
+| Allow Apache (httpd) to access user /home directories | httpd_enable_homedirs |
+| Allow NFS shares to be mounted and written to | nfs_export_all_rw |
+| Allow Apache to send outbound network connections/emails | httpd_can_network_connect |
+| Allow FTP to write/upload files | ftpd_full_access |
+| Allow Samba (smb) to share user home directories | samba_enable_home_dirs |
