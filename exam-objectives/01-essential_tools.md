@@ -34,7 +34,8 @@ grep -ve '^#' -e '^$' /etc/ssh/sshd_config
 ## Access remote systems using SSH ✅
 
 ## Log in and switch users in multi-user targets ✅
-- this is basically switching users with `su - <user-name>` command and logging out with `exit`, but you can also switch the targets instantly without needing reboot with the command:
+- switch users with `su - <user-name>` command and logout with `exit`
+-  switch the system targets (instantly without needing reboot):
 ```bash
 sudo systemctl isolate <target-name>
 # for example switch to terminal only environment immediately
