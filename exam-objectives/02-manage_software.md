@@ -1,5 +1,6 @@
 # Manage software ✅
 
+
 ## Configure access to RPM repositories ✅
 ### Clear out existing RPM repos if any (to practice configuring them)
 - RHEL reads repository configurations from `.repo` files located inside the `/etc/yum.repos.d/` directory. To reset your system:
@@ -43,8 +44,13 @@ sudo vi /etc/yum.repos.d/local.repo
 # you can give it any name
 [BaseOS]
 name=BaseOS
+# this baseurl could be a http or a local file system path
+# if it's local file, use file:/// (the third / is the absolute root path)
 baseurl=<baseOS url provided in the exam>
 enabled=1
+# if the task asks you to enable gpg signature checking
+# use 'gpgcheck=1' and under it add: gpgkey=file:///<path-to-gpg-key>
+# default GPG key is usually located in: /etc/pki/rpm-gpg/...
 gpgcheck=0
 
 [AppStream]
@@ -53,7 +59,7 @@ baseurl=<appStream url provided in the exam>
 enabled=1
 gpgcheck=0
 ```
-save and quit
+- save and quit
 - clear old data if any
 ```bash
 sudo dnf clean all
@@ -63,10 +69,44 @@ sudo dnf clean all
 sudo dnf repolist
 ```
 
+#### if given ISO image to mount and make it's packages available to dnf
+Sometimes the exam task specifies that an ISO image is located at a local path (for example, `/var/downloads/rhel.iso`) and asks you to make its packages available to dnf.
+
+If you get a prompt like this, you must mount it and ensure the mount survives a reboot.
+
+- create the mount point dir
+```bash
+sudo mkdir -p /mnt/repo
+```
+- mount it permanently
+```bash
+sudo vi /etc/fstab
+```
+Add this line:
+```bash
+# source               # mount point # file system  # options   # fsck/dump
+/var/downloads/rhel.iso     /mnt/repo    iso9660    loop,defaults    0 0
+```
+> use `auto` in the `iso9660` place if you think you'll forget the exact file system name, `auto` tells Linux to automatically detect the filesystem type.
+- test fstab entry so you don't break boot
+```bash
+sudo mount -a
+```
+- verify BaseOS and AppStream folders are inside
+```bash
+ls -la /mnt/repo
+```
+- after that continue from creating the .repo file at /etc/yum.rep...
+- use `baseurl=file///mnt/repo/BaseOS` and so on with AppStream like the notes above
+
+> Tip: Check if the path given in the exam instructions already exists and has files inside it (ls /path/given). If the directory exists and contains BaseOS/AppStream --> Just write the `.repo` file. If they point you to an `.iso` file --> Mount it, add it to `/etc/fstab`, then write the .repo file.
+
+
 ## Install and remove RPM software packages ✅
 - `sudo dnf update -y` => update system
 - `sudo dnf install <pkg-name> -y` => install a pkg
 - `sudo dnf remove <pkg-name> -y` => removes a pkg
+
 
 ## Configure access to Flatpak repositories ✅
 - first install flatpak if not installed
@@ -87,6 +127,7 @@ flatpak remotes
 ```bash
 flatpak update -y
 ```
+
 
 ## Install and remove Flatpak software packages ✅
 - `flatpak search <app-name> => search for an app.
