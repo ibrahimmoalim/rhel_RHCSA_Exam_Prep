@@ -220,8 +220,9 @@ find . -iname "*.txt" -user ibrahim -exec chmod 777 {} \;
 ```
 > this finds any file or dir owned by 'ibrahim' ending with '.txt' and gives them all permissions to user, group, and others.
 
-> {} = puts the items found inside a {} one by one so -exec can run commands on them, it finds the first file, drops it into {}, runs command, and then completely empties {} before moving to the next file.
-> \; = end of execution.
+> `{}` is used in place of the actual value(file-path/dir-path) (not flag/option), like `chmod 777 file.txt` becomes `chmod 777 {}` or `cp file.txt /patht/to/..` becomes `cp {} /path/to/...`. `find` puts the items found inside a {} one by one so `-exec` can run commands on them, it finds the first file, drops it into {}, runs command, and then completely empties {} before moving to the next file.
+
+> `\;` means end of execution.
 - find by size
 ```bash
 find ~ -size +1G
