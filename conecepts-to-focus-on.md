@@ -30,7 +30,7 @@ mount -o remount,rw /sysroot
 - Targeted Extent Allocation: When creating Logical Volumes based on exact extents rather than raw size, use the -l flag (lowercase L) instead of -L.
     - Example: `lvcreate -l 20 -n lv_data vg_storage` (allocates exactly 20 extents).
 
-### 3. Persistent Rootless Containers
+### 3. Persistent Rootless Containers (containers/podman is no longer in RHCSA exam, so you can skip this)
 - User Linger: Normally, user-space systemd instances terminate when the user logs out. For a rootless podman container to persist as a background service, "linger" must be enabled.
     - Command: `loginctl enable-linger <username>`
 - Systemd Integration: This allows systemd to start the user's unit files at system boot, even if they have not authenticated via SSH or console.
