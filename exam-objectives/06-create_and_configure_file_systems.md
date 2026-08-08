@@ -179,7 +179,7 @@ sudo systemctl enable --now autofs
 ```
 
 - how does `autofs` work?
-`autofs` uses tow main files to map remote shares to local folders:
+`autofs` uses two main files to map remote shares to local folders:
 1. master map file (`/etc/auto.master.d/nfs.autofs`): this defines the parent dir where mounts will live and points to a secondary map file.
 2. secondary map file (`/etc/auto.nfs`): this defines the sub-dir name, mount options, and the remote NFS path.
 
