@@ -62,7 +62,7 @@ It'll be opened in an editor
     ```bash
     */15 8-15 * * 6,0-4 <command>
     ```
-    - run hourly/daily/weekly/monthly/yearly
+    - run hourly/daily/weekly/monthly/yearly, e.g daily:
     ```bash
     @daily <command>
     ```
@@ -120,7 +120,7 @@ sudo systemctl daemon-reload
 # enable and start ONLY the .timer unit (NOT the .service)
 sudo systemctl enable --now job_test.timer
 ```
-> If you get an error, make sure syntax is correct in both files and validate the OnCalendar syntax with:
+> If you get an error trying to use a timer targeting specific days, make sure syntax is correct in both files and validate the OnCalendar syntax with:
 ```bash
 # this is sat-fri but because this calendar starts weekdays on mon, we have to do mon..thu first
 # (the two dots mean mon through thu) then we do sat and sun. this only skips fri.
