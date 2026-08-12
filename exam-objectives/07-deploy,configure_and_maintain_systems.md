@@ -508,14 +508,9 @@ sudo vi /etc/default/grub
 GRUB_TIMEOUT=10
 ```
 3. Rebuild the GRUB configuration to save changes persistently:
-    - On UEFI systems (most modern RHEL installations):
-    ```bash
-    sudo grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
-    ```
-    - On BIOS / Legacy systems:
-    ```bash
-    sudo grub2-mkconfig -o /boot/grub2/grub.cfg
-    ```
+```bash
+sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+```
 > Tip: On RHEL 8/9/10, pointing `grub2-mkconfig -o /etc/grub2.cfg` works on both BIOS and UEFI because `/etc/grub2.cfg` is a **symlink** to the correct location.
 
 > Note: `grub2-mkconfig` is only required after modifying `/etc/default/grub` to make the changes persistent, not after using `grubby` (grubby writes the changes directly into the active GRUB configuration file on disk immediately.)
