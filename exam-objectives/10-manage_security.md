@@ -77,6 +77,7 @@ Default max directory permissions are 777 which is rwxrwxrwx ('x' here allows 'c
 
 umask calculation:
 Directory Permission = 777 - umask
+
 File Permission = 666 - umask
 
 Example: **umask 027**
