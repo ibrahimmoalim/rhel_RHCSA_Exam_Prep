@@ -110,7 +110,6 @@ echo "umask 0022" >> ~/.bashrc
 ```
 Set persistent umask for all users (including future ones):
 ```bash
-#
 sudo vi /etc/bashrc
 ```
 add this line at the end to set default permissions system-wide:
