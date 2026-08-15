@@ -16,22 +16,14 @@ When the objectives say *"Interrupt the boot process in order to gain access to 
 * When you sit down at the exam, one of your very first tasks will likely be a machine that you do not have the root password for.
 * You will have to reboot it, edit the GRUB bootloader parameters (e.g., adding `rd.break`), remount the file system, and reset the root password before you can even begin the rest of the exam. If you cannot do this, you cannot complete the test.
 
-### 3. Understanding the "Basic Containers" Requirement
-
-Depending on the specific version of Red Hat Enterprise Linux (RHEL) currently being tested, Red Hat often includes **basic container management** using `podman`. Even if it doesn't stand out in the text block you pasted, ensure your study material covers how to:
-
-* Find and pull a container image from a local registry.
-* Run a container as a background service.
-* Configure a container to start automatically at boot using systemd (specifically using user-level systemd services).
-
-### 4. SELinux Will Fail You if You Ignore It
+### 3. SELinux Will Fail You if You Ignore It
 
 The objectives mention SELinux file contexts and port labels. In the exam, if you configure a web server (httpd) or an SSH service on a non-standard port, **SELinux will block it by default.**
 
 * If you do not know how to change the SELinux context or port label, your service won't work, and you will lose points.
 * *Pro tip:* Changing SELinux to "Permissive" or "Disabled" globally to bypass a task will often cause you to fail the entire security section. You must fix it the right way using tools like `semanage` and `restorecon`.
 
-### Your Self-Study Strategy
+### Self-Study Strategy
 
 If you can look at every single bullet point on that list, open a blank terminal on a free RHEL virtual machine, and perform the task from memory without looking at notes, **you are completely ready.**
 
