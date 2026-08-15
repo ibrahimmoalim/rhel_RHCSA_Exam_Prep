@@ -1,6 +1,8 @@
+> ## Note: This isn't related to the exam, it's for setting up a VM with RHEL installed so that it connects to RedHat's Subscription Management so you can install packages.
+
 The `rhc connect` utility (Remote Host Configuration) relies on **Activation Keys** and an **Organization ID** rather than your typical developer username and password.
 
-Since you already have a Red Hat Individual Developer account, you can easily generate these credentials to get Red Hat Lightspeed and Insights hooked up.
+If you already have a Red Hat Individual Developer account, you can easily generate these credentials to get Red Hat Lightspeed and Insights hooked up.
 
 ---
 
