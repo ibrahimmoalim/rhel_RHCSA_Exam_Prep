@@ -2,7 +2,7 @@
 
 ## Enabling EPEL for RHEL 10
 
-The EPEL URL is slightly different for version 10, and you must make sure the **CodeReady Linux Builder (CRB)** repository is turned on first, as many EPEL packages depend on it.
+The EPEL (Extra Packages for Enterprise Linux) URL is slightly different for version 10, and you must make sure the **CodeReady Linux Builder (CRB)** repository is turned on first, as many EPEL packages depend on it.
 
 Run these to get EPEL 10 up and running:
 
@@ -11,14 +11,14 @@ Run these to get EPEL 10 up and running:
 sudo subscription-manager repos --enable codeready-builder-for-rhel-10-$(arch)-rpms
 
 # Install the EPEL 10 repository configuration
-sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm
+sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rp
 
 ```
 
-Once that is done, you can install **`htop`** and **`tree`** normally. For system specs, use **`fastfetch` or `neofetch`** if screenfetch is unavailable:
+Once that is done, you can install packages like **`htop`** and **`tree`** normally.
 
 ```bash
-sudo dnf install htop tree neofetch
+sudo dnf install htop tree
 ```
 
 ---
