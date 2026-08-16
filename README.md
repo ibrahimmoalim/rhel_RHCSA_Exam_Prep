@@ -176,7 +176,7 @@ chmod -R 755 /var/www/html/
 
     only adds 'x' to files if they already had it but makes every dir inside executable (meaning you can `cd` into it)
 ```bash
-chmod -R u+X /shared_dir/
+chmod -R u+x /shared_dir/
 ```
 > x means execute a script or a binary for files, but for dirs it means enter by running `cd`
 
