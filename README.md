@@ -618,7 +618,6 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # type in your cron, e.g:
 # * * * * * echo "hi" >> /home/ibra/cron.txt
 # this will print 'hi' into that file every min.
-# the '*' every, so that's every day/month...
 crontab -e
 ```
 - schedule a cron for a specific user
