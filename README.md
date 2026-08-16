@@ -241,7 +241,7 @@ Shows who logged in last and how long they been using the system (last on top)
 id (user-name) => Shows userID, groupID and what groups that user is in (wheel group means user has adminstrative privileges)
 #### passwd and shadow
 - cat /etc/(passwd or shadow) => Used for checking users and their IDs
-- cat /etc/login.defs => contains config for user creation like whether homde dir will be created for new users or not and much more
+- cat /etc/login.defs => contains config for user creation like whether home dir will be created for new users or not and much more
 #### skel (skeleton)
 This is a folder in /etc/skel that contains:
 ```bash
