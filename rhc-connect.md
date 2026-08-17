@@ -8,7 +8,7 @@ If you already have a Red Hat Individual Developer account, you can easily gener
 
 ### Get your Organization ID and Activation Key
 
-1. Open your browser and log into the **[Red Hat Hybrid Cloud Console](https://www.google.com/search?q=https://console.redhat.com/)** using your developer account credentials.
+1. Open your browser and log into the **[Red Hat Hybrid Cloud Console](https://console.redhat.com/)** using your developer account credentials.
 2. In the left navigation sidebar, go to **Services** -> **System Configuration** -> **Activation Keys**.
 3. At the top of the *Activation Keys* page, you will see your numeric **Organization ID** (e.g., `12345678`). Write this down.
 4. Click the blue **Create activation key** button:
