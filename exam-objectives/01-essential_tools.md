@@ -61,7 +61,7 @@ sudo systemctl isolate graphical.target
 - [hard and sof link notes](https://github.com/ibrahimmoalim/rhel_RHCSA_Exam_Prep#ln-links)
 
 ## List, set, and change standard ugo/rwx permissions ✅
-- `chown` and `chgrp` to change ownership of fiesl or dirs
+- `chown` and `chgrp` to change ownership of files or directories
 ```bash
 # change owner to ali
 sudo chown ali file.txt
