@@ -404,13 +404,13 @@ When a question states: *"User `ali` cannot write to `/data/reports`,"* follow t
 ls -ld /data/reports
 id ali
 ```
-
 *Is ali the owner? Is ali in the group? Does the target bit have `w`?*
+
 2. **Check for blocking ACLs:**
 ```bash
 getfacl /data/reports
 ```
-
 *Is there an explicit `u:ali:r--` or a mask blocking write access?*
+
 3. **Check parent directory permissions:**
 *Even if `/data/reports` has `777`, if `/data` is set to `700` and owned by `root`, user `ali` can't traverse into the folder!* Test parent paths with `ls -ld /data`.
