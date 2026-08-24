@@ -103,7 +103,7 @@ Description=Run Job Test Every Sunday Morning
 
 [Timer]
 # Format: DayOfWeek Year-Month-Day Hour:Minute:Second
-OnCalender=Sun *-*-* 08:00:00
+OnCalendar=Sun *-*-* 08:00:00
 # if the server is down when time is reached, 'Persistent=true' ensures
 # systemd triggers the missed job immediately the next time the machine boots up.
 Persistent=true
