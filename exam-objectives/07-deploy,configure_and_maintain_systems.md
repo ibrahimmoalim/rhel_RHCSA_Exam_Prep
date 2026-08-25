@@ -511,6 +511,6 @@ GRUB_TIMEOUT=10
 ```bash
 sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 ```
-> Tip: On RHEL 8/9/10, pointing `grub2-mkconfig -o /etc/grub2.cfg` works on both BIOS and UEFI because `/etc/grub2.cfg` is a **symlink** to the correct location.
+> Tip: On RHEL 8/9/10, `grub2-mkconfig -o /etc/grub2.cfg` works on both BIOS and UEFI because `/etc/grub2.cfg` is a **symlink** to the correct location.
 
 > Note: `grub2-mkconfig` is only required after modifying `/etc/default/grub` to make the changes persistent, not after using `grubby` (grubby writes the changes directly into the active GRUB configuration file on disk immediately.)
