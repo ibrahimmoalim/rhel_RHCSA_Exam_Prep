@@ -130,6 +130,7 @@ ssh-keygen
 > this creates a private key and a public key (ending in .pub) inside ~/.ssh/
 
 - Copy the public key to the remote server
+
 remote server must be reachable via SSH with the use of password, and user must already exist in remote server (this key will make you connect without password in the future)
 ```bash
 ssh-copy-id user@remote-server-ip
