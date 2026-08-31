@@ -1,4 +1,4 @@
-> ## Note: This isn't related to the exam, it's for being able to install packages you want on a RHEL system using a free developer account, look at [rhc-connect](https://github.com/ibrahimmoalim/rhel_RHCSA_Exam_Prep/blob/main/enable_rhc-connect_for_local_port_forwarding.md) to connect your developer account to RedHat's Subscription Management.
+> ## Note: This isn't related to the exam, it's for being able to install packages you want on a RHEL system using a free developer account, look at [rhc-connect](https://github.com/ibrahimmoalim/rhel_RHCSA_Exam_Prep/blob/main/rhc-connect.md) to connect your developer account to RedHat's Subscription Management.
 
 ## Enabling EPEL for RHEL 10
 
