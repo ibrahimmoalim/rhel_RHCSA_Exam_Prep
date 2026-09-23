@@ -1,4 +1,4 @@
-# RHCSA RHEL 9 Targeted Study Guide
+# RHCSA RHEL 10 Targeted Study Guide
 **Subject:** Red Hat Certified System Administrator (EX200) Preparation
 **Topics Covered:**
 - System Boot & Emergency Password Recovery
